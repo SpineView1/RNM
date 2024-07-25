@@ -1,5 +1,4 @@
-# SBML Simulation Wrapper
-
+# Regulatory Network Model
 This is a web application for simulating Systems Biology Markup Language (SBML) models using the RoadRunner simulation engine. It allows users to upload SBML files, run simulations, visualize simulation results, and download simulation data.
 
 ## Features
