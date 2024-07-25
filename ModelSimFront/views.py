@@ -10,7 +10,7 @@ from django.conf import settings
 import libsbml
 import roadrunner
 import uuid
-
+import json
 # Define model classes (Compartment, Species, Reaction, UnitDefinition, Parameter, Event)
 class Compartment:
     def __init__(self, id, name, size):
@@ -239,66 +239,107 @@ class ViewSBML(APIView):
         return render(request, 'view_sbml.html', {'model_data': model_data, 'reaction_graph_url': reaction_graph_url})
 
 # Endpoint to run simulation
-import json
 
 class RunSimulation(APIView):
     def post(self, request, format=None):
         try:
-            files_in_current_folder = os.listdir()
-            sbml_files = [file for file in files_in_current_folder if file.endswith('.xml')]
+            # Parse the request body
+            data = json.loads(request.body)
+            execution_start = float(data.get('execution_start', 0))
+            execution_end = float(data.get('execution_end', 100))
+            execution_steps = int(data.get('execution_steps', 1000))
 
-            if not sbml_files:
-                return JsonResponse({'success': False, 'message': 'No SBML files found in the current directory.'})
+            sbml_file = next((f for f in os.listdir(settings.BASE_DIR) if f.endswith('.xml')), None)
+            if not sbml_file:
+                return JsonResponse({'success': False, 'message': 'No SBML file found in the project directory.'})
+            sbml_file_path = os.path.join(settings.BASE_DIR, sbml_file)
 
-            sbml_file = sbml_files[0]
-            sbml_file_path = os.path.join(os.getcwd(), sbml_file)
             rr = roadrunner.RoadRunner(sbml_file_path)
-            results = rr.simulate(0, 30, 100)
+            model = rr.getModel()
+            il1beta_species = next((s for s in model.getFloatingSpeciesIds() if 'il' in s.lower() and '1' in s and 'beta' in s.lower()), None)
+            if not il1beta_species:
+                return JsonResponse({'success': False, 'message': 'IL-1β species not found in the model.'})
 
-            # Define the species indices for each category
-            plot_indices = {
-                'Pro-Inflammatory': [0, 1, 2],
-                'Anti-Inflammatory': [3],
-                'Growth factors': [9],
-                'ECM Destruction': [0, 1],
-                'ECM Synthesis': [2],
-                'Hypertrophy': [49]
+            # Use the execution parameters from the frontend
+            baseline_results = rr.simulate(execution_start, execution_end, execution_steps)
+
+            rr.reset()
+            rr.setValue(il1beta_species, 1.0)
+            rr.setValue(f'init({il1beta_species})', 1.0)
+            rr.setBoundary(il1beta_species, True)
+            stimulated_results = rr.simulate(execution_start, execution_end, execution_steps)
+
+            fig, axs = plt.subplots(2, 2, figsize=(20, 20))
+            fig.suptitle('Baseline and IL-1β Stimulation Results', fontsize=16)
+
+            # Baseline Line Plot
+            for column in baseline_results.colnames[1:]:
+                axs[0, 0].plot(baseline_results['time'], baseline_results[column], label=column)
+            axs[0, 0].set_title('Baseline Simulation')
+            axs[0, 0].set_xlabel('Time')
+            axs[0, 0].set_ylabel('Concentration')
+            axs[0, 0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='xx-small')
+            axs[0, 0].tick_params(axis='both', which='major', labelsize=8)
+            axs[0, 0].grid(True)
+
+            # Baseline Bar Plot
+            last_values = [baseline_results[column][-1] for column in baseline_results.colnames[1:]]
+            axs[0, 1].bar(baseline_results.colnames[1:], last_values)
+            axs[0, 1].set_title('Baseline Final Values')
+            axs[0, 1].set_xlabel('Species')
+            axs[0, 1].set_ylabel('Concentration')
+            axs[0, 1].tick_params(axis='x', rotation=90, labelsize=8)
+            axs[0, 1].tick_params(axis='y', labelsize=8)
+
+            # Stimulated Line Plot
+            for column in stimulated_results.colnames[1:]:
+                axs[1, 0].plot(stimulated_results['time'], stimulated_results[column], label=column)
+            axs[1, 0].set_title('IL-1β Stimulated Simulation')
+            axs[1, 0].set_xlabel('Time')
+            axs[1, 0].set_ylabel('Concentration')
+            axs[1, 0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='xx-small')
+            axs[1, 0].tick_params(axis='both', which='major', labelsize=8)
+            axs[1, 0].grid(True)
+
+            # Stimulated Bar Plot
+            last_values = [stimulated_results[column][-1] for column in stimulated_results.colnames[1:]]
+            axs[1, 1].bar(stimulated_results.colnames[1:], last_values)
+            axs[1, 1].set_title('IL-1β Stimulated Final Values')
+            axs[1, 1].set_xlabel('Species')
+            axs[1, 1].set_ylabel('Concentration')
+            axs[1, 1].tick_params(axis='x', rotation=90, labelsize=8)
+            axs[1, 1].tick_params(axis='y', labelsize=8)
+
+            plt.tight_layout()
+
+            plot_filename = f'simulation_plot_{uuid.uuid4().hex}.png'
+            plot_path = os.path.join(settings.MEDIA_ROOT, plot_filename)
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+
+            plot_url = os.path.join(settings.MEDIA_URL, plot_filename)
+
+            def named_array_to_dict(named_array):
+                return {
+                    'time': named_array['time'].tolist(),
+                    'species': {col: named_array[col].tolist() for col in named_array.colnames if col != 'time'}
+                }
+
+            simulation_data = {
+                'baseline': named_array_to_dict(baseline_results),
+                'stimulated': named_array_to_dict(stimulated_results),
+                'column_names': baseline_results.colnames
             }
 
-            # Create subplots for each category
-            num_categories = len(plot_indices)
-            fig, axes = plt.subplots(num_categories, 1, figsize=(10, 2 * num_categories), sharex=True)
+            return JsonResponse({
+                'success': True,
+                'simulation_data': simulation_data,
+                'plot_url': plot_url
+            })
 
-            if num_categories == 1:
-                axes = [axes]  # Ensure axes is iterable when there's only one subplot
-
-            for ax, (category, indices) in zip(axes, plot_indices.items()):
-                indices_to_plot = [i + 1 for i in indices]  # +1 because the first column is time
-                filtered_results = results[:, [0] + indices_to_plot]
-                filtered_colnames = [results.colnames[0]] + [results.colnames[i + 1] for i in indices]
-
-                for idx in range(1, filtered_results.shape[1]):  # Skip the first column (time)
-                    ax.plot(filtered_results[:, 0], filtered_results[:, idx], label=filtered_colnames[idx])
-
-                ax.set_title(category)
-                ax.set_ylabel('Concentration')
-                ax.legend()
-
-            plt.xlabel('Time')
-
-            random_filename = str(uuid.uuid4()) + '.png'
-            plot_path = os.path.join(settings.MEDIA_ROOT, random_filename)
-            plt.savefig(plot_path)
-            plt.close()  # Close the plot to prevent memory leaks
-
-            plot_image_url = os.path.join(settings.MEDIA_URL, random_filename)
-
-            simulation_data = []
-            for i in range(len(results)):
-                simulation_data.append(dict(zip(results.colnames, results[i])))
-
-            return JsonResponse({'success': True, 'simulation_data': simulation_data, 'plot_url': plot_image_url})
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())  # This will print the full traceback
             return JsonResponse({'success': False, 'message': str(e)})
 
 # Endpoint to update parameters

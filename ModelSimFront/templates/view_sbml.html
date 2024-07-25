@@ -3,353 +3,410 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBML Model Viewer</title>
-    <!-- Material Design CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <title>Spineview - Regulatory Network Model</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Custom CSS with Skeleton-inspired minimalism -->
     <style>
-        .tabs .tab a {
-            color: black; /* Tab text color */
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
         }
-        .align-left {
-            text-align: left;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-        .input-field {
-            margin-bottom: 20px; /* Adjust as needed */
+        .nav-tabs .nav-link {
+            color: #495057;
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .nav-tabs .nav-link:hover,
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         #loader {
-            display: none; /* Hide loader by default */
             position: fixed;
-            z-index: 999;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 120px;
-            height: 120px;
-            animation: spin 2s linear infinite;
+            z-index: 1000;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .github-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
         }
-        .model-info {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .model-info .info {
-            flex: 1;
-        }
-        .model-info .reaction-graph {
-            flex: 1;
-            text-align: center;
-        }
-        .reaction-graph img {
-            max-width: 300%;
+        .modal-dialog {
+            max-width: 90%;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <ul class="tabs tabs-fixed-width tabs-left" id="myTab">
-            <li class="tab"><a href="#model_overview" class="active">Model Overview</a></li>
-            <li class="tab"><a href="#metadata">Metadata</a></li>
-            <li class="tab"><a href="#unit_definitions">List of Unit Definitions</a></li>
-            <li class="tab"><a href="#compartments">Compartments</a></li>
-            <li class="tab"><a href="#reactions">Reactions</a></li>
-            <li class="tab"><a href="#parameters">Parameters</a></li>
-            <li class="tab"><a href="#api_doc">API Documentation</a></li>
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">Regulatory Network Model</h1>
+        
+        <a href="https://github.com/yourusername/your-repo" target="_blank" class="btn btn-dark github-btn">
+            <i class="material-icons align-middle">code</i> GitHub
+        </a>
+
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="home-tab" href="https://spineview.upf.edu" target="_blank" rel="noopener noreferrer">
+                    <i class="material-icons align-middle">home</i> Home
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                    <i class="material-icons align-middle">dashboard</i> Overview
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" data-bs-target="#metadata" type="button" role="tab" aria-controls="metadata" aria-selected="false">
+                    <i class="material-icons align-middle">info</i> Metadata
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="units-tab" data-bs-toggle="tab" data-bs-target="#units" type="button" role="tab" aria-controls="units" aria-selected="false">
+                    <i class="material-icons align-middle">straighten</i> Units
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="compartments-tab" data-bs-toggle="tab" data-bs-target="#compartments" type="button" role="tab" aria-controls="compartments" aria-selected="false">
+                    <i class="material-icons align-middle">view_module</i> Compartments
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="reactions-tab" data-bs-toggle="tab" data-bs-target="#reactions" type="button" role="tab" aria-controls="reactions" aria-selected="false">
+                    <i class="material-icons align-middle">compare_arrows</i> Reactions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="simulation-tab" data-bs-toggle="tab" data-bs-target="#simulation" type="button" role="tab" aria-controls="simulation" aria-selected="false">
+                    <i class="material-icons align-middle">flash_on</i> Simulation
+                </button>
+            </li>
         </ul>
-        <div id="loader"></div>
-        <div class="row">
-            <div id="model_overview" class="col s12">
-                <!-- Container for model information and reaction graph -->
-                <div class="model-info" style="width: 50%;">
-                    <!-- Content for Model Overview -->
-                    <div class="info" >
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Model Overview</h5>
                         <p>Model ID: {{ model_data.model_id }}</p>
                         <p>Model Name: {{ model_data.model_name }}</p>
                         <p>Number of Compartments: {{ model_data.num_compartments }}</p>
                         <p>Number of Species: {{ model_data.num_species }}</p>
                     </div>
-                    <!-- Reaction graph image -->
-                    <div class="reaction-graph">
-                        <img src="{{ reaction_graph_url }}" alt="Reaction Graph" style="width: 270%; margin-right: 70%; ">
-                    </div>
                 </div>
-            </div>
-            <div id="metadata" class="col s12">
-                <!-- Content for Metadata -->
-                <ul class="collapsible">
-                    <li>
-                        <div class="collapsible-body">
-                            <li>
-                                <pre>{{ model_data.model_metadata }}</pre>
-                            </li>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div id="unit_definitions" class="col s12">
-                <!-- Content for List of Unit Definitions -->
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Metaid</th>
-                            <th>Units</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for unit_definition in model_data.unit_definitions %}
-                        <tr>
-                            <td>{{ unit_definition.id }}</td>
-                            <td>{{ unit_definition.name }}</td>
-                            <td>{{ unit_definition.metaid }}</td>
-                            <td>{{ unit_definition.units }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div id="compartments" class="col s12">
-                <!-- Content for Compartments -->
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Size</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for compartment in model_data.compartments %}
-                        <tr>
-                            <td>{{ compartment.id }}</td>
-                            <td>{{ compartment.name }}</td>
-                            <td>{{ compartment.size }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div id="reactions" class="col s12">
-                <!-- Content for Reactions -->
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Metaid</th>
-                            <th>Reactants/Products</th>
-                            <th>Modifiers</th>
-                            <th>Math</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reaction in model_data.reactions %}
-                        <tr>
-                            <td>{{ reaction.id }}</td>
-                            <td>{{ reaction.name }}</td>
-                            <td>{{ reaction.metaid }}</td>
-                            <td>{{ reaction.reactants_products|safe }}</td>
-                            <td>{{ reaction.modifiers }}</td>
-                            <td>{{ reaction.math }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div id="parameters" class="col s12">
-                <!-- Content for Parameters -->
-                <form id="update_parameters_form" method="post">
-                    {% csrf_token %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Metaid</th>
-                                <th>Units</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for parameter in model_data.parameters %}
-                            <tr>
-                                <td>{{ parameter.id }}</td>
-                                <td>{{ parameter.name }}</td>
-                                <td>{{ parameter.metaid }}</td>
-                                <td>{{ parameter.units }}</td>
-                                <td>
-                                    <input type="text" id="{{ parameter.id }}" name="{{ parameter.id }}" value="{{ parameter.value }}" class="validate numeric">
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <br>
-                    <button type="submit" id="update_parameters_button" class="btn waves-effect waves-light">Update Parameters</button>
-                    <div class="input-field col s6">
-                        <input type="number" id="execution_start" name="execution_start" class="validate">
-                        <label for="execution_start">Execution Start (ms)</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="number" id="execution_end" name="execution_end" class="validate">
-                        <label for="execution_end">Execution End (ms)</label>
-                    </div>
-                    <div class="input-field col s6">
-                        <input type="number" id="execution_steps" name="execution_steps" class="validate">
-                        <label for="execution_steps">Execution Steps</label>
-                    </div>
-                    <button type="button" id="simulate_button" class="btn waves-effect waves-light modal-trigger" data-target="simulation-modal">Run Simulation</button>
-                </form><br>
                 
-                <!-- Modal Structure -->
-                <div id="simulation-modal" class="modal">
-                    <div class="modal-content">
-                        <h4>Simulation Results</h4>
-                        <div id="plot-container"></div> 
-                        <div id="simulation-results"></div>
-                        <a id="download-results" href="#" download>Download Results</a>
+            </div>
+            
+            <div class="tab-pane fade" id="metadata" role="tabpanel" aria-labelledby="metadata-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Metadata</h5>
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%;">
+                            {{ model_data.model_metadata }}
+                        </div>
                     </div>
                 </div>
             </div>
-            <div id="api_doc" class="col s12">
-                <!-- Content for API Documentation -->
-                <h5>API Documentation</h5>
-                <p>Here you can find the documentation for the API endpoints:</p>
-                <!-- Add your API documentation content here -->
-                <p>Endpoint 1: /run_simulation/ - This endpoint runs a simulation of the SBML model.</p>
-                <p>Endpoint 2: /update_parameters/ - This endpoint updates the parameters of the SBML model.</p>
+            
+            <div class="tab-pane fade" id="units" role="tabpanel" aria-labelledby="units-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Unit Definitions</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Units</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit_definition in model_data.unit_definitions %}
+                                <tr>
+                                    <td>{{ unit_definition.id }}</td>
+                                    <td>{{ unit_definition.units }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="compartments" role="tabpanel" aria-labelledby="compartments-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Compartments</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Size</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for compartment in model_data.compartments %}
+                                <tr>
+                                    <td>{{ compartment.id }}</td>
+                                    <td>{{ compartment.name }}</td>
+                                    <td>{{ compartment.size }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="reactions" role="tabpanel" aria-labelledby="reactions-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Reactions</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Reactants/Products</th>
+                                    <th>Modifiers</th>
+                                    <th>Math</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reaction in model_data.reactions %}
+                                <tr>
+                                    <td>{{ reaction.id }}</td>
+                                    <td>{{ reaction.reactants_products|safe }}</td>
+                                    <td>{{ reaction.modifiers }}</td>
+                                    <td>{{ reaction.math }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="simulation" role="tabpanel" aria-labelledby="simulation-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Simulation Parameters</h5>
+                        <form id="update_parameters_form" method="post">
+                            {% csrf_token %}
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Metaid</th>
+                                        <th>Units</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for parameter in model_data.parameters %}
+                                    <tr>
+                                        <td>{{ parameter.id }}</td>
+                                        <td>{{ parameter.name }}</td>
+                                        <td>{{ parameter.metaid }}</td>
+                                        <td>{{ parameter.units }}</td>
+                                        <td>
+                                            <input type="text" id="{{ parameter.id }}" name="{{ parameter.id }}" value="{{ parameter.value }}" class="form-control">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="submit" id="update_parameters_button" class="btn btn-primary mt-3">Update Parameters</button>
+                        </form>
+                        
+                        <h5 class="card-title mt-4">Run Simulation</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="execution_start" class="form-label">Execution Start (ms)</label>
+                                <input type="number" id="execution_start" name="execution_start" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="execution_end" class="form-label">Execution End (ms)</label>
+                                <input type="number" id="execution_end" name="execution_end" class="form-control">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="execution_steps" class="form-label">Execution Steps</label>
+                                <input type="number" id="execution_steps" name="execution_steps" class="form-control">
+                            </div>
+                        </div>
+                        <button type="button" id="simulate_button" class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#simulation-modal">Run Simulation</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Simulation Results Modal -->
+    <div class="modal fade" id="simulation-modal" tabindex="-1" aria-labelledby="simulationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="simulationModalLabel">Regulatory Network Simulation Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="plot-container" class="text-center"></div>
+                    <div class="d-flex justify-content-around mt-4">
+                        <a id="download-baseline" class="btn btn-primary">Download Baseline Results</a>
+                        <a id="download-stimulated" class="btn btn-secondary">Download Stimulated Results</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Loader -->
+    <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
+        <div id="loader" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75" style="z-index: 9999; display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        
+    <!-- Bootstrap 5 JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+
     <!-- Materialize JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        // Initialize Materialize tabs after the document has fully loaded
         document.addEventListener('DOMContentLoaded', function() {
-            var tabs = document.querySelectorAll('.tabs');
-            M.Tabs.init(tabs);
-        });
-        // MathJax configuration
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [['$$','$$']],
-                displayMath: [['$$','$$']],
-                processEscapes: true,
-                processEnvironments: true
-            }
-        });
-
-        // Event listener for the "Run Simulation" button
-        document.getElementById("simulate_button").addEventListener("click", function() {
-            // Display loader
-            document.getElementById("loader").style.display = "block";
-
-            // Fetch CSRF token
-            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            // Send AJAX request to run simulation
-            fetch("/run_simulation/", {  // Update the URL to match your endpoint
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
+            // Initialize Bootstrap components
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
             })
-            .then(response => response.json())
-            .then(data => {
-                // Hide loader
-                document.getElementById("loader").style.display = "none";
-
-                if (data.success) {
-                    // Simulation ran successfully, display results
-                    document.getElementById("simulation-results").innerHTML = "<h5>Simulation Results</h5>";
-                    document.getElementById("simulation-results").innerHTML += "<p>Simulation data:</p>";
-                    document.getElementById("simulation-results").innerHTML += "<pre>" + JSON.stringify(data.simulation_data, null, 2) + "</pre>";
-                    document.getElementById("simulation-results").innerHTML += "<p>Plot:</p>";
-                    document.getElementById("plot-container").innerHTML = "<img src='" + data.plot_url + "' alt='Simulation Plot'>";
-                    
-                    // Create a blob containing the simulation data
-                    var blob = new Blob([JSON.stringify(data.simulation_data)], { type: "application/json" });
-                    var url = URL.createObjectURL(blob);
-                    
-                    // Update download link to download the JSON file
-                    var downloadLink = document.getElementById("download-results");
-                    downloadLink.setAttribute("href", url);
-                    downloadLink.setAttribute("download", "simulation_results.json");
-                    downloadLink.style.display = "block";
-                } else {
-                    // Simulation failed, display error message
-                    alert("Simulation failed: " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while running the simulation.");
+    
+            // Event listener for the "Run Simulation" button
+            document.getElementById("simulate_button").addEventListener("click", function() {
+                document.getElementById("loader").style.display = "flex";
+                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+                // Get execution parameters
+                var executionStart = parseFloat(document.getElementById("execution_start").value) || 0;
+                var executionEnd = parseFloat(document.getElementById("execution_end").value) || 100;
+                var executionSteps = parseInt(document.getElementById("execution_steps").value) || 1000;
+    
+                fetch("/run_simulation/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken
+                    },
+                    body: JSON.stringify({
+                        execution_start: executionStart,
+                        execution_end: executionEnd,
+                        execution_steps: executionSteps
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("loader").style.display = "none";
+                    if (data.success) {
+                        var plotContainer = document.getElementById("plot-container");
+                        plotContainer.innerHTML = `<img src="${data.plot_url}" alt="Simulation Plot" style="max-width: 100%; height: auto;">`;
+                        
+                        setupDownloadButton("download-baseline", data.simulation_data.baseline, "baseline_results.json");
+                        setupDownloadButton("download-stimulated", data.simulation_data.stimulated, "stimulated_results.json");
+                        
+                        var simulationModal = new bootstrap.Modal(document.getElementById('simulation-modal'));
+                        simulationModal.show();
+    
+                        // Add event listener to clean up modal when it's hidden
+                        document.getElementById('simulation-modal').addEventListener('hidden.bs.modal', function () {
+                            document.body.classList.remove('modal-open');
+                            document.querySelector('.modal-backdrop').remove();
+                        });
+                    } else {
+                        alert("Simulation failed: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("loader").style.display = "none";
+                    console.error("Error:", error);
+                    alert("An error occurred while running the simulation.");
+                });
             });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var modals = document.querySelectorAll('.modal');
-            M.Modal.init(modals);
-        });
-
-        // Event listener for the "Update Parameters" form
-        document.getElementById("update_parameters_form").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent the default form submission
-
-            // Display loader
-            document.getElementById("loader").style.display = "block";
-
-            // Fetch CSRF token
-            var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-            // Prepare parameters data from form inputs
-            var parametersData = {};
-            var formElements = this.elements;
-            for (var i = 0; i < formElements.length; i++) {
-                if (formElements[i].tagName === 'INPUT' && formElements[i].value.trim() !== '') {
-                    parametersData[formElements[i].name] = parseFloat(formElements[i].value); // Convert value to float
-                }
+    
+            function setupDownloadButton(buttonId, data, filename) {
+                var button = document.getElementById(buttonId);
+                var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+                var url = URL.createObjectURL(blob);
+                button.setAttribute("href", url);
+                button.setAttribute("download", filename);
             }
-
-            // Send AJAX request to update parameters
-            fetch("{% url 'update_parameters' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": csrftoken
-                },
-                body: JSON.stringify(parametersData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Hide loader
-                document.getElementById("loader").style.display = "none";
-                
-                // Check if parameters were successfully updated
-                if (data.success) {
-                    alert("Parameters updated successfully!");
-                } else {
-                    console.error("Error:", data.message);
-                    alert("An error occurred while updating parameters.");
+    
+            // Event listener for the "Update Parameters" form
+            document.getElementById("update_parameters_form").addEventListener("submit", function(event) {
+                event.preventDefault();
+                document.getElementById("loader").style.display = "flex";
+                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+                var parametersData = {};
+                var formElements = this.elements;
+                for (var i = 0; i < formElements.length; i++) {
+                    if (formElements[i].tagName === 'INPUT' && formElements[i].value.trim() !== '') {
+                        parametersData[formElements[i].name] = parseFloat(formElements[i].value);
+                    }
                 }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert("An error occurred while updating parameters.");
+    
+                fetch("{% url 'update_parameters' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken
+                    },
+                    body: JSON.stringify(parametersData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("loader").style.display = "none";
+                    if (data.success) {
+                        alert("Parameters updated successfully!");
+                    } else {
+                        console.error("Error:", data.message);
+                        alert("An error occurred while updating parameters.");
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("loader").style.display = "none";
+                    console.error("Error:", error);
+                    alert("An error occurred while updating parameters.");
+                });
             });
         });
     </script>
+    
 </body>
 </html>
