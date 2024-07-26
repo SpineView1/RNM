@@ -44,17 +44,82 @@
             box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
         #loader {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1000;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        }
+
+        .dna-loader {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            animation: rotate 4s linear infinite;
+        }
+
+        .strand {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff6b6b, #4ecdc4);
+            transform-origin: 50% 50% -50px;
+        }
+
+        .strand:nth-child(1) { transform: rotateY(0deg); }
+        .strand:nth-child(2) { transform: rotateY(30deg); }
+        .strand:nth-child(3) { transform: rotateY(60deg); }
+        .strand:nth-child(4) { transform: rotateY(90deg); }
+        .strand:nth-child(5) { transform: rotateY(120deg); }
+        .strand:nth-child(6) { transform: rotateY(150deg); }
+
+        .base {
+            position: absolute;
+            width: 20px;
+            height: 8px;
+            background-color: #feca57;
+            left: -9px;
+            animation: move-base 2s linear infinite;
+        }
+
+        .strand:nth-child(even) .base {
+            background-color: #ff9ff3;
+        }
+
+        .strand .base:nth-child(1) { top: 10%; }
+        .strand .base:nth-child(2) { top: 30%; }
+        .strand .base:nth-child(3) { top: 50%; }
+        .strand .base:nth-child(4) { top: 70%; }
+        .strand .base:nth-child(5) { top: 90%; }
+
+        @keyframes rotate {
+            0% { transform: rotateX(0); }
+            100% { transform: rotateX(360deg); }
+        }
+
+        @keyframes move-base {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+        .nav-tabs {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        }
+        .nav-item {
+            margin: 0 5px;
         }
         .github-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
         .modal-dialog {
             max-width: 90%;
@@ -62,13 +127,11 @@
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 position-relative">
         <h1 class="text-center mb-5">Regulatory Network Model</h1>
-        
-        <a href="https://github.com/yourusername/your-repo" target="_blank" class="btn btn-dark github-btn">
+        <!-- <a href="https://github.com/SpineView1/RNM" target="_blank" class="btn btn-dark github-btn">
             <i class="material-icons align-middle">code</i> GitHub
-        </a>
-
+        </a> -->
         <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link" id="home-tab" href="https://spineview.upf.edu" target="_blank" rel="noopener noreferrer">
@@ -286,12 +349,52 @@
     
 
     <!-- Loader -->
-    <div id="loader" class="spinner-border text-primary" role="status" style="display: none;">
-        <div id="loader" class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-white bg-opacity-75" style="z-index: 9999; display: none;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <div id="loader" style="display: none;">
+        <div class="dna-loader">
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+            </div>
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+            </div>
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+            </div>
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+            </div>
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+            </div>
+            <div class="strand">
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
+                <div class="base"></div>
             </div>
         </div>
+    </div>
         
     <!-- Bootstrap 5 JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -307,18 +410,26 @@
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             })
-    
+        
             // Event listener for the "Run Simulation" button
             document.getElementById("simulate_button").addEventListener("click", function() {
+                // Show loader
                 document.getElementById("loader").style.display = "flex";
+        
+                // Close modal if it's open
+                var simulationModal = bootstrap.Modal.getInstance(document.getElementById('simulation-modal'));
+                if (simulationModal) {
+                    simulationModal.hide();
+                }
+        
                 var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
+        
                 // Get execution parameters
                 var executionStart = parseFloat(document.getElementById("execution_start").value) || 0;
                 var executionEnd = parseFloat(document.getElementById("execution_end").value) || 100;
                 var executionSteps = parseInt(document.getElementById("execution_steps").value) || 1000;
-    
-                fetch("/run_simulation/", {
+        
+                fetch("/network-model/run_simulation/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -332,7 +443,9 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // Hide loader
                     document.getElementById("loader").style.display = "none";
+        
                     if (data.success) {
                         var plotContainer = document.getElementById("plot-container");
                         plotContainer.innerHTML = `<img src="${data.plot_url}" alt="Simulation Plot" style="max-width: 100%; height: auto;">`;
@@ -340,25 +453,30 @@
                         setupDownloadButton("download-baseline", data.simulation_data.baseline, "baseline_results.json");
                         setupDownloadButton("download-stimulated", data.simulation_data.stimulated, "stimulated_results.json");
                         
+                        // Show modal only after results are loaded
                         var simulationModal = new bootstrap.Modal(document.getElementById('simulation-modal'));
                         simulationModal.show();
-    
+        
                         // Add event listener to clean up modal when it's hidden
                         document.getElementById('simulation-modal').addEventListener('hidden.bs.modal', function () {
                             document.body.classList.remove('modal-open');
-                            document.querySelector('.modal-backdrop').remove();
+                            var backdrop = document.querySelector('.modal-backdrop');
+                            if (backdrop) {
+                                backdrop.remove();
+                            }
                         });
                     } else {
                         alert("Simulation failed: " + data.message);
                     }
                 })
                 .catch(error => {
+                    // Hide loader
                     document.getElementById("loader").style.display = "none";
                     console.error("Error:", error);
                     alert("An error occurred while running the simulation.");
                 });
             });
-    
+        
             function setupDownloadButton(buttonId, data, filename) {
                 var button = document.getElementById(buttonId);
                 var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
@@ -366,13 +484,13 @@
                 button.setAttribute("href", url);
                 button.setAttribute("download", filename);
             }
-    
+        
             // Event listener for the "Update Parameters" form
             document.getElementById("update_parameters_form").addEventListener("submit", function(event) {
                 event.preventDefault();
                 document.getElementById("loader").style.display = "flex";
                 var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
+        
                 var parametersData = {};
                 var formElements = this.elements;
                 for (var i = 0; i < formElements.length; i++) {
@@ -380,7 +498,7 @@
                         parametersData[formElements[i].name] = parseFloat(formElements[i].value);
                     }
                 }
-    
+        
                 fetch("{% url 'update_parameters' %}", {
                     method: "POST",
                     headers: {
@@ -406,7 +524,6 @@
                 });
             });
         });
-    </script>
-    
+        </script>
 </body>
 </html>

@@ -21,5 +21,5 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('ModelSimFront.urls')),  # Include the app-level URLs here
+    path('network-model/', include('ModelSimFront.urls')),  # Include the app-level URLs here
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
