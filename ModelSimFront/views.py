@@ -1,6 +1,3 @@
-from django.http import JsonResponse
-from django.shortcuts import render
-from rest_framework.views import APIView
 import os
 import glob
 import pandas as pd
@@ -11,6 +8,20 @@ import libsbml
 import roadrunner
 import uuid
 import json
+import numpy as np
+import logging
+from django.http import JsonResponse, FileResponse, HttpResponse
+from django.shortcuts import render
+from django.views import View
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import tempfile
+from rest_framework.views import APIView
+from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+
 # Define model classes (Compartment, Species, Reaction, UnitDefinition, Parameter, Event)
 class Compartment:
     def __init__(self, id, name, size):
@@ -168,164 +179,267 @@ def parse_sbml(sbml_file):
 # Endpoint to view SBML
 class ViewSBML(APIView):
     def get(self, request, format=None):
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        sbml_files = glob.glob(os.path.join(base_dir, '*.xml'))
+        try:
+            base_dir = settings.BASE_DIR
+            sbml_files = glob.glob(os.path.join(base_dir, '*.xml'))
 
-        if sbml_files:
+            if not sbml_files:
+                return render(request, 'error.html', {'error_message': "No SBML files found in the directory."})
+
             sbml_file = sbml_files[0]
-        else:
-            return render(request, 'error.html', {'error_message': "No SBML files found in the directory."})
+            model_data, errors = parse_sbml(sbml_file)
 
-        model_data, errors = parse_sbml(sbml_file)
+            if errors:
+                return render(request, 'error.html', {'error_message': errors})
 
-        if errors:
-            return render(request, 'error.html', {'error_message': errors})
-
-        # Generate the reaction graph image
-        network_data_file = os.path.join(base_dir, 'CRT.xlsx')  # Ensure this path is correct
-        output_path = os.path.join(settings.MEDIA_ROOT, 'reaction_graph.png')
-        reaction_graph_url = os.path.join(settings.MEDIA_URL, 'reaction_graph.png')
-
-        return render(request, 'view_sbml.html', {'model_data': model_data} )
+            return render(request, 'view_sbml.html', {'model_data': model_data})
+        except Exception as e:
+            logger.error(f"Error in ViewSBML: {str(e)}")
+            return render(request, 'error.html', {'error_message': "An unexpected error occurred."})
 # Endpoint to run simulation
 
+def add_brackets(name):
+    return f"[{name}]" if not name.startswith('[') else name
+
+def remove_brackets(name):
+    return name.strip('[]')
+
+@method_decorator(csrf_exempt, name='dispatch')
 class RunSimulation(APIView):
     def post(self, request, format=None):
+        rr = None
         try:
-            # Parse the request body
             data = json.loads(request.body)
             execution_start = float(data.get('execution_start', 0))
             execution_end = float(data.get('execution_end', 100))
             execution_steps = int(data.get('execution_steps', 1000))
+            clamped_species = data.get('clamped_species', [])
+
+            logger.info(f"Simulation parameters: start={execution_start}, end={execution_end}, steps={execution_steps}, clamped={clamped_species}")
 
             sbml_file = next((f for f in os.listdir(settings.BASE_DIR) if f.endswith('.xml')), None)
             if not sbml_file:
                 return JsonResponse({'success': False, 'message': 'No SBML file found in the project directory.'})
+            
             sbml_file_path = os.path.join(settings.BASE_DIR, sbml_file)
-
             rr = roadrunner.RoadRunner(sbml_file_path)
+            
             model = rr.getModel()
-            il1beta_species = next((s for s in model.getFloatingSpeciesIds() if 'il' in s.lower() and '1' in s and 'beta' in s.lower()), None)
-            if not il1beta_species:
-                return JsonResponse({'success': False, 'message': 'IL-1β species not found in the model.'})
+            if model is None:
+                return JsonResponse({'success': False, 'message': 'Failed to get model from RoadRunner.'})
 
-            # Use the execution parameters from the frontend
+            all_species = model.getFloatingSpeciesIds()
+
+            # Baseline simulation
             baseline_results = rr.simulate(execution_start, execution_end, execution_steps)
+            baseline_data = {col: baseline_results[:, i].tolist() for i, col in enumerate(baseline_results.colnames)}
 
             rr.reset()
-            rr.setValue(il1beta_species, 1.0)
-            rr.setValue(f'init({il1beta_species})', 1.0)
-            rr.setBoundary(il1beta_species, True)
-            stimulated_results = rr.simulate(execution_start, execution_end, execution_steps)
+            
+            # Clamp selected species
+            for species in clamped_species:
+                species_id = species['id']
+                species_state = species['state']
+                species_with_brackets = f"[{species_id}]" if not species_id.startswith('[') else species_id
+                if species_with_brackets in all_species:
+                    if species_state == 'activate':
+                        rr.setValue(species_with_brackets, 1.0)
+                    elif species_state == 'degenerate':
+                        rr.setValue(species_with_brackets, 0.0)
+                    rr.setBoundary(species_with_brackets, True)
+                    logger.info(f"Clamped {species_with_brackets} to {1.0 if species_state == 'activate' else 0.0} and set as boundary species.")
 
-            fig, axs = plt.subplots(2, 2, figsize=(20, 20))
-            fig.suptitle('Baseline and IL-1β Stimulation Results', fontsize=16)
+            # Clamped simulation
+            clamped_results = rr.simulate(execution_start, execution_end, execution_steps)
+            clamped_data = {col: clamped_results[:, i].tolist() for i, col in enumerate(clamped_results.colnames)}
 
-            # Baseline Line Plot
-            for column in baseline_results.colnames[1:]:
-                axs[0, 0].plot(baseline_results['time'], baseline_results[column], label=column)
-            axs[0, 0].set_title('Baseline Simulation')
-            axs[0, 0].set_xlabel('Time')
-            axs[0, 0].set_ylabel('Concentration')
-            axs[0, 0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='xx-small')
-            axs[0, 0].tick_params(axis='both', which='major', labelsize=8)
-            axs[0, 0].grid(True)
-
-            # Baseline Bar Plot
-            last_values = [baseline_results[column][-1] for column in baseline_results.colnames[1:]]
-            axs[0, 1].bar(baseline_results.colnames[1:], last_values)
-            axs[0, 1].set_title('Baseline Final Values')
-            axs[0, 1].set_xlabel('Species')
-            axs[0, 1].set_ylabel('Concentration')
-            axs[0, 1].tick_params(axis='x', rotation=90, labelsize=8)
-            axs[0, 1].tick_params(axis='y', labelsize=8)
-
-            # Stimulated Line Plot
-            for column in stimulated_results.colnames[1:]:
-                axs[1, 0].plot(stimulated_results['time'], stimulated_results[column], label=column)
-            axs[1, 0].set_title('IL-1β Stimulated Simulation')
-            axs[1, 0].set_xlabel('Time')
-            axs[1, 0].set_ylabel('Concentration')
-            axs[1, 0].legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='xx-small')
-            axs[1, 0].tick_params(axis='both', which='major', labelsize=8)
-            axs[1, 0].grid(True)
-
-            # Stimulated Bar Plot
-            last_values = [stimulated_results[column][-1] for column in stimulated_results.colnames[1:]]
-            axs[1, 1].bar(stimulated_results.colnames[1:], last_values)
-            axs[1, 1].set_title('IL-1β Stimulated Final Values')
-            axs[1, 1].set_xlabel('Species')
-            axs[1, 1].set_ylabel('Concentration')
-            axs[1, 1].tick_params(axis='x', rotation=90, labelsize=8)
-            axs[1, 1].tick_params(axis='y', labelsize=8)
-
+            # Generate plots
+            plt.figure(figsize=(15, 10))
+            for species in baseline_data.keys():
+                if species != 'time':
+                    plt.plot(baseline_data['time'], baseline_data[species], label=f'{species} (Baseline)')
+                    plt.plot(clamped_data['time'], clamped_data[species], label=f'{species} (Clamped)', linestyle='--')
+            plt.title('Baseline vs Clamped Simulation')
+            plt.xlabel('Time')
+            plt.ylabel('Concentration')
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
+            plt.grid(True)
             plt.tight_layout()
 
-            plot_filename = f'simulation_plot_{uuid.uuid4().hex}.png'
-            plot_path = os.path.join(settings.MEDIA_ROOT, plot_filename)
-            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-            plt.close()
+            # Save line plot
+            line_plot_filename = f'line_plot_{uuid.uuid4().hex}.png'
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                plt.savefig(temp_file.name, dpi=300, bbox_inches='tight')
+                plt.close()
+                with open(temp_file.name, 'rb') as f:
+                    line_plot_path = default_storage.save(line_plot_filename, ContentFile(f.read()))
+            os.unlink(temp_file.name)
 
-            plot_url = os.path.join(settings.MEDIA_URL, plot_filename)
+            # Create bar plot
+            plt.figure(figsize=(15, 10))
+            species = [s for s in baseline_data.keys() if s != 'time']
+            baseline_final = [baseline_data[s][-1] for s in species]
+            clamped_final = [clamped_data[s][-1] for s in species]
+            x = np.arange(len(species))
+            width = 0.35
+            plt.bar(x - width/2, baseline_final, width, label='Baseline')
+            plt.bar(x + width/2, clamped_final, width, label='Clamped')
+            plt.xlabel('Species')
+            plt.ylabel('Final Concentration')
+            plt.title('Comparison of Final Values: Baseline vs Clamped')
+            plt.xticks(x, species, rotation=90)
+            plt.legend()
+            plt.tight_layout()
 
-            def named_array_to_dict(named_array):
-                return {
-                    'time': named_array['time'].tolist(),
-                    'species': {col: named_array[col].tolist() for col in named_array.colnames if col != 'time'}
-                }
+            # Save bar plot
+            bar_plot_filename = f'bar_plot_{uuid.uuid4().hex}.png'
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                plt.savefig(temp_file.name, dpi=300, bbox_inches='tight')
+                plt.close()
+                with open(temp_file.name, 'rb') as f:
+                    bar_plot_path = default_storage.save(bar_plot_filename, ContentFile(f.read()))
+            os.unlink(temp_file.name)
+
+            line_plot_url = default_storage.url(line_plot_path)
+            bar_plot_url = default_storage.url(bar_plot_path)
 
             simulation_data = {
-                'baseline': named_array_to_dict(baseline_results),
-                'stimulated': named_array_to_dict(stimulated_results),
-                'column_names': baseline_results.colnames
+                'baseline': baseline_data,
+                'clamped': clamped_data,
+                'column_names': list(baseline_data.keys())
             }
 
+            logger.info("Simulation completed successfully")
             return JsonResponse({
                 'success': True,
                 'simulation_data': simulation_data,
-                'plot_url': plot_url
+                'line_plot_url': line_plot_url,
+                'bar_plot_url': bar_plot_url
             })
 
         except Exception as e:
+            logger.error(f"Error in RunSimulation: {str(e)}")
             import traceback
-            print(traceback.format_exc())  # This will print the full traceback
-            return JsonResponse({'success': False, 'message': str(e)})
+            traceback.print_exc()
+            return JsonResponse({'success': False, 'message': f"An error occurred: {str(e)}"}, status=500)
+        finally:
+            if rr is not None:
+                del rr
 
 # Endpoint to update parameters
 class UpdateParameters(APIView):
     def post(self, request, format=None):
         try:
-            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            sbml_files = glob.glob(os.path.join(base_dir, '*.xml'))
+            data = json.loads(request.body)
+            sbml_file = next((f for f in os.listdir(settings.BASE_DIR) if f.endswith('.xml')), None)
+            if not sbml_file:
+                return JsonResponse({'success': False, 'message': 'No SBML file found in the directory.'})
 
-            if not sbml_files:
-                return JsonResponse({'success': False, 'message': 'No SBML files found in the directory.'})
-
-            sbml_file = sbml_files[0]
-
+            sbml_file_path = os.path.join(settings.BASE_DIR, sbml_file)
             reader = libsbml.SBMLReader()
-            document = reader.readSBML(sbml_file)
+            document = reader.readSBML(sbml_file_path)
 
             if document.getNumErrors() > 0:
                 errors = document.getErrorLog().toString()
                 return JsonResponse({'success': False, 'message': errors})
 
             model = document.getModel()
-
             if model is None:
                 return JsonResponse({'success': False, 'message': 'No model found in the SBML file.'})
 
-            for i in range(model.getNumParameters()):
-                parameter_id = model.getParameter(i).getId()
-                new_value_str = request.POST.get(parameter_id)
-                if new_value_str is not None:
-                    new_value = float(new_value_str)
-                    model.getParameter(i).setValue(new_value)
+            for parameter_id, new_value in data.items():
+                parameter = model.getParameter(parameter_id)
+                if parameter is not None:
+                    parameter.setValue(float(new_value))
 
             writer = libsbml.SBMLWriter()
-            writer.writeSBMLToFile(document, sbml_file)
+            writer.writeSBMLToFile(document, sbml_file_path)
 
             return JsonResponse({'success': True, 'message': 'Parameters updated successfully.'})
         except Exception as e:
+            logger.error(f"Error in UpdateParameters: {str(e)}")
             return JsonResponse({'success': False, 'message': str(e)})
 
+class DownloadSBMLView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            file_name = 'autogenerated_model.xml'
+            file_path = os.path.join(settings.BASE_DIR, file_name)
+            
+            if not os.path.exists(file_path):
+                return HttpResponse(f"SBML file not found at {file_path}", status=404)
+            
+            if not os.access(file_path, os.R_OK):
+                return HttpResponse(f"Permission denied: Cannot read SBML file at {file_path}", status=403)
+            
+            file_size = os.path.getsize(file_path)
+            
+            with open(file_path, 'rb') as file:
+                response = FileResponse(file, content_type='application/xml')
+                response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+                response['Content-Length'] = file_size
+            
+            return response
+        
+        except Exception as e:
+            logger.exception("An error occurred while trying to download the SBML file")
+            return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+import logging
+logger = logging.getLogger(__name__)
+
+class GetNodesView(View):
+    def get(self, request):
+        try:
+            reader = libsbml.SBMLReader()
+            sbml_file_path = os.path.join(settings.BASE_DIR, 'autogenerated_model.xml')
+            document = reader.readSBML(sbml_file_path)
+            model = document.getModel()
+            
+            nodes = []
+            for species in model.getListOfSpecies():
+                nodes.append({
+                    'id': species.getId(),
+                    'name': species.getName() or species.getId(),
+                    'clamped': species.getConstant(),
+                    'state': 'activate' if species.getConstant() else '',
+                    'initial_concentration': species.getInitialConcentration()
+                })
+            
+            return JsonResponse({'nodes': nodes})
+        except Exception as e:
+            logger.error(f"Error in GetNodesView: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ClampNodesView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            clamped_nodes = data.get('clamped_nodes', [])
+
+            reader = libsbml.SBMLReader()
+            sbml_file_path = os.path.join(settings.BASE_DIR, 'autogenerated_model.xml')
+            document = reader.readSBML(sbml_file_path)
+            model = document.getModel()
+            
+            for species in model.getListOfSpecies():
+                node_info = next((node for node in clamped_nodes if node['id'] == species.getId()), None)
+                if node_info:
+                    if node_info['state'] == 'activate':
+                        species.setInitialConcentration(1.0)  # Set to high value for activation
+                    elif node_info['state'] == 'degenerate':
+                        species.setInitialConcentration(0.0)  # Set to low value for degeneration
+                    species.setConstant(True)  # Set as boundary condition
+                else:
+                    # Unclamping: reset to original initial concentration and allow to vary
+                    species.setConstant(False)
+                    species.setInitialConcentration(species.getInitialConcentration())
+            
+            writer = libsbml.SBMLWriter()
+            writer.writeSBML(document, sbml_file_path)
+
+            return JsonResponse({'success': True})
+        except Exception as e:
+            logger.error(f"Error in ClampNodesView: {str(e)}")
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)

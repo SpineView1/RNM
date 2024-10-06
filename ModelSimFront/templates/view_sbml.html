@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spineview - Regulatory Network Model</title>
+    <title>Spineview - NPC Regulatory Network Model</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Font Awesome (Solid + Brands) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css">
+
     
     <!-- Custom CSS with Skeleton-inspired minimalism -->
     <style>
@@ -124,11 +129,45 @@
         .modal-dialog {
             max-width: 90%;
         }
+        .modal-slim {
+        max-width: 400px;
+    }
+    .modal-slim .modal-body {
+        padding: 1rem;
+    }
+    .modal-slim .table {
+        margin-bottom: 0;
+    }
+    .modal-slim .table td, .modal-slim .table th {
+        padding: 0.5rem;
+    }
+    .modal-slim .form-check {
+        margin-bottom: 0;
+    }
+    table {
+            width: 70%;
+            border-collapse: collapse;
+        }
+    
+        th, td {
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 8px;
+            word-wrap: break-word; /* Ensure text wraps within cells */
+        }
+    
+        th {
+            background-color: #f2f2f2;
+        }
+        .modal-60w {
+        max-width: 50%;
+        width: 50%;
+    }
     </style>
 </head>
 <body>
     <div class="container mt-5 position-relative">
-        <h1 class="text-center mb-5">Regulatory Network Model</h1>
+        <h1 class="text-center mb-5">Nucleus Pulposus Cell Regulatory Network Model</h1>
         <!-- <a href="https://github.com/SpineView1/RNM" target="_blank" class="btn btn-dark github-btn">
             <i class="material-icons align-middle">code</i> GitHub
         </a> -->
@@ -140,12 +179,12 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
-                    <i class="material-icons align-middle">dashboard</i> Overview
+                    <i class="material-icons align-middle">dashboard</i> Contributions
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" data-bs-target="#metadata" type="button" role="tab" aria-controls="metadata" aria-selected="false">
-                    <i class="material-icons align-middle">info</i> Metadata
+                    <i class="material-icons align-middle">info</i> Abstract
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -172,6 +211,119 @@
 
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <div class="modal-body">
+                            <table>
+                                <tbody><tr>
+                                    <th>Author</th>
+                                    <th><i class="fas fa-home" title="Home"></i></th>
+                                    <th><i class="fas fa-envelope" title="Email"></i></th>
+                                    <th><i class="fab fa-twitter-square"></i></th>
+                                    <th><i class="fab fa-github" title="GitHub"></i></th>
+                                    <th><i class="fas fa-graduation-cap" title="Google Scholar"></i></th>
+                                    <th><i class="fab fa-orcid" title="ORCID"></i></th>
+                                    <th><i class="fab fa-researchgate" title="ResearchGate"></i></th>
+                                    <th><i class="fab fa-linkedin" title="LinkedIn"></i></th>
+                                    <th>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 599 260" width="20" height="20">
+                                            <g fill="none" fill-rule="evenodd">
+                                                <path fill="#000" d="M483 180.265V249h-26V60h26v14.735C495.302 64.002 511.392 57.5 529 57.5c38.66 0 70 31.34 70 70s-31.34 70-70 70c-17.608 0-33.698-6.502-46-17.235zm46-6.765c-25.957 0-47-21.043-47-47s21.043-47 47-47 47 21.043 47 47-21.043 47-47 47zM0 0h25v156c0 10.667 7.667 16 23 16 1.333 4.667 4.333 11.667 9 21H34c-21 0-34-21-34-37V0zm382 197.5c-38.66 0-70-31.34-70-70s31.34-70 70-70 70 31.34 70 70-31.34 70-70 70zm0-24c25.957 0 47-21.043 47-47s-21.043-47-47-47-47 21.043-47 47 21.043 47 47 47z"></path>
+                                                <path fill="#DA2032" d="M178 194c-35.346 0-64-28.654-64-64 0-35.346 28.654-64 64-64 35.346 0 64 28.654 64 64 0 35.346-28.654 64-64 64zm0-22c27.062 0 49-21.938 49-49s-21.938-49-49-49-49 21.938-49 49 21.938 49 49 49z"></path>
+                                                <path fill="#F7941E" d="M178 214c-46.392 0-84-37.608-84-84s37.608-84 84-84 84 37.608 84 84-37.608 84-84 84zm3.5-18c39.488 0 71.5-32.012 71.5-71.5S220.988 53 181.5 53 110 85.012 110 124.5s32.012 71.5 71.5 71.5z"></path>
+                                                <path fill="#D5CD25" d="M178 236c-58.542 0-106-47.458-106-106S119.458 24 178 24s106 47.458 106 106-47.458 106-106 106zm4-21c49.706 0 90-40.294 90-90s-40.294-90-90-90-90 40.294-90 90 40.294 90 90 90z"></path>
+                                                <path fill="#757600" d="M178 260c-71.797 0-130-58.203-130-130S106.203 0 178 0s130 58.203 130 130-58.203 130-130 130zm5.5-21c61.027 0 110.5-49.473 110.5-110.5S244.527 18 183.5 18 73 67.473 73 128.5 122.473 239 183.5 239z"></path>
+                                            </g>
+                                        </svg>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <td>Sofia Tseranidou <sup>1</sup></td>
+                                    <td><a href="https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.upf.edu/web/simbiosys/people/-/asset_publisher/2h1s00p2oc8E/content/tseranidou-sofia/maximized&ved=2ahUKEwj0xdz3p_mIAxUR9AIHHUtaOwMQFnoECBsQAQ&usg=AOvVaw1-UdP5dzTe4bASH2o4kAGU">X</a></td>
+                                    <td><a href="mailto:sofia.tseranidou@upf.edu">X</a></td>
+                                    <td><a href="https://x.com/sofiatseranidou">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="https://www.researchgate.net/profile/Sofia-Tseranidou">X</a></td>
+                                    <td><a href="https://www.linkedin.com/in/sofia-tseranidou-095a74102/?originalSubdomain=es">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Maria Segarra-Queralt<sup>2</sup></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Francis Kiptengwer Chemorion <sup>3</sup></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Christine Le Maitre <sup>1</sup></td>
+                                    <td><a href="https://www.upf.edu/web/etic/computational-biology-and-biomedical-systems/-/asset_publisher/MKlA53ZqmAS8/content/noailly-j%C3%A9r%C3%B4me-bernard/maximized">X</a></td>
+                                    <td><a href="mailto:jerome.noailly@upf.edu">X</a></td>
+                                    <td><a href="https://twitter.com/jeromenoailly">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="https://scholar.google.es/citations?user=YFvwxpwAAAAJ&amp;hl=ca&amp;oi=sra">X</a></td>
+                                    <td><a href="https://orcid.org/0000-0003-3446-7621">X</a></td>
+                                    <td><a href="https://www.researchgate.net/profile/Jerome-Noailly-2">X</a></td>
+                                    <td><a href="https://www.linkedin.com/in/jnoailly/">X</a></td>
+                                    <td><a href="https://loop.frontiersin.org/people/59318/publications">X</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Janet Piñero <sup>1,4</sup></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                    <td><a href="#">X</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Jérôme Noailly <sup>1,5,6</sup></td>
+                                    <td><a href="https://disc4all.upf.edu/bio/francis-chemorion/">X</a></td>
+                                    <td><a href="mailto:francis.chemorion01@estudiant.upf.edu">X</a></td>
+                                    <td><a href="https://twitter.com/fkchemorion">X</a></td>
+                                    <td><a href="https://github.com/kchemorion">X</a></td>
+                                    <td><a href="https://scholar.google.com/citations?user=upAnje8AAAAJ&amp;hl=en">X</a></td>
+                                    <td><a href="https://orcid.org/0000-0002-2099-0035">X</a></td>
+                                    <td><a href="https://www.researchgate.net/profile/Francis-Chemorion">X</a></td>
+                                    <td><a href="https://www.linkedin.com/in/francis-chemorion/">X</a></td>
+                                    <td><a href="https://loop.frontiersin.org/people/2449392/publications">X</a></td>
+                                </tr>
+                            </tbody></table>
+                            <br>
+                            <p>
+                                1. Department of Engineering, Universitat Pompeu Fabra, Spain<br>
+                                2. Division of Clinical6
+                                Medicine, School of Medicine and Population Health, University of Sheffield, Sheffield, United7
+                                Kingdom; <br>
+                                3. Hospital del Mar Medical Research Institute, Spain<br>
+                                4. ICREA, Barcelona, Spain<br>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <br>
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Model Overview</h5>
@@ -303,7 +455,11 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            <button type="submit" id="update_parameters_button" class="btn btn-primary mt-3">Update Parameters</button>
+                            <div class="mt-3 d-flex justify-content-start align-items-center">
+                                <button type="submit" id="update_parameters_button" class="btn btn-primary me-2">Update Parameters</button>
+                                <button type="button" id="node_tray_button" class="btn btn-secondary me-2">Node Tray</button>
+                                <a href="{% url 'download_sbml' %}" id="download_sbml_button" class="btn btn-info">Download SBML</a>
+                            </div>
                         </form>
                         
                         <h5 class="card-title mt-4">Run Simulation</h5>
@@ -321,12 +477,43 @@
                                 <input type="number" id="execution_steps" name="execution_steps" class="form-control">
                             </div>
                         </div>
-                        <button type="button" id="simulate_button" class="btn btn-success mt-3" data-bs-toggle="modal" data-bs-target="#simulation-modal">Run Simulation</button>
+                        <button type="button" id="simulate_button" class="btn btn-success mt-3">Run Simulation</button>
+                                    </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="nodeTrayModal" tabindex="-1" aria-labelledby="nodeTrayModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-60w">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="nodeTrayModalLabel">Node Tray</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Node Name</th>
+                                    <th>Clamp</th>
+                                    <th>State</th>
+                                    <th>Initial Concentration</th>
+                                </tr>
+                            </thead>
+                            <tbody id="nodeTrayBody">
+                                <!-- This will be populated dynamically -->
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="saveNodeTray">Save changes</button>
                 </div>
             </div>
         </div>
     </div>
+
 
     <!-- Simulation Results Modal -->
     <div class="modal fade" id="simulation-modal" tabindex="-1" aria-labelledby="simulationModalLabel" aria-hidden="true">
@@ -410,96 +597,275 @@
             var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl)
             })
-        
+
+            // Event listener for the Node Tray button
+            var nodeTrayButton = document.getElementById("node_tray_button");
+            if (nodeTrayButton) {
+                nodeTrayButton.addEventListener("click", function() {
+                    console.log("Node Tray button clicked");
+                    fetchNodesAndPopulateModal();
+                });
+            } else {
+                console.error("Node Tray button not found");
+            }
+
             // Event listener for the "Run Simulation" button
-            document.getElementById("simulate_button").addEventListener("click", function() {
-                // Show loader
-                document.getElementById("loader").style.display = "flex";
+            var simulateButton = document.getElementById("simulate_button");
+            if (simulateButton) {
+                simulateButton.addEventListener("click", function() {
+                    console.log("Run Simulation button clicked");
+                    runSimulation();
+                });
+            } else {
+                console.error("Simulate button not found");
+            }
+
+            // Event listener for the "Update Parameters" form
+            var updateParametersForm = document.getElementById("update_parameters_form");
+            if (updateParametersForm) {
+                updateParametersForm.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    console.log("Update Parameters form submitted");
+                    updateParameters();
+                });
+            } else {
+                console.error("Update Parameters form not found");
+            }
+
         
-                // Close modal if it's open
-                var simulationModal = bootstrap.Modal.getInstance(document.getElementById('simulation-modal'));
-                if (simulationModal) {
-                    simulationModal.hide();
+                function fetchNodesAndPopulateModal() {
+        console.log("Fetching nodes...");
+        fetch("/network-model/get_nodes/")
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Nodes data received:", data);
+                const nodeTrayBody = document.getElementById("nodeTrayBody");
+                nodeTrayBody.innerHTML = "";  // Clear existing content
+
+                data.nodes.forEach(node => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${node.name}</td>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input node-checkbox" type="checkbox" value="${node.id}" id="clamp_${node.id}" ${node.clamped ? 'checked' : ''}>
+                                <label class="form-check-label" for="clamp_${node.id}">
+                                    Clamp
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm node-state-toggle" id="state_${node.id}" ${!node.clamped ? 'disabled' : ''}>
+                                <option value="activate" ${node.state === 'activate' ? 'selected' : ''}>Activate</option>
+                                <option value="degenerate" ${node.state === 'degenerate' ? 'selected' : ''}>Degenerate</option>
+                            </select>
+                        </td>
+                        <td style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${node.initial_concentration}
+                        </td>
+                    `;
+                    nodeTrayBody.appendChild(row);
+                });
+
+                // Add event listeners to checkboxes
+                document.querySelectorAll('.node-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const stateSelect = this.closest('tr').querySelector('.node-state-toggle');
+                        stateSelect.disabled = !this.checked;
+                        if (this.checked && !stateSelect.value) {
+                            stateSelect.value = 'activate'; // Default to 'activate' when clamped
+                        }
+                    });
+                });
+
+                // Show the modal
+                var nodeTrayModal = new bootstrap.Modal(document.getElementById('nodeTrayModal'));
+                nodeTrayModal.show();
+
+                // Add event listener to the Save Changes button
+                document.getElementById("saveNodeTray").addEventListener("click", saveClampedNodes);
+            })
+            .catch(error => {
+                console.error("Error fetching nodes:", error);
+                alert("An error occurred while fetching nodes. Check the console for details.");
+            });
+    }
+  
+            function saveClampedNodes() {
+                const clampedNodes = [];
+                document.querySelectorAll("#nodeTrayBody tr").forEach(row => {
+                    const checkbox = row.querySelector('input[type="checkbox"]');
+                    const stateSelect = row.querySelector('select');
+                    if (checkbox.checked) {
+                        clampedNodes.push({
+                            id: checkbox.value,
+                            state: stateSelect.value
+                        });
+                    }
+                });
         
-                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-                // Get execution parameters
-                var executionStart = parseFloat(document.getElementById("execution_start").value) || 0;
-                var executionEnd = parseFloat(document.getElementById("execution_end").value) || 100;
-                var executionSteps = parseInt(document.getElementById("execution_steps").value) || 1000;
-        
-                fetch("/network-model/run_simulation/", {
+                fetch("/network-model/clamp_nodes/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-CSRFToken": csrftoken
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
-                    body: JSON.stringify({
-                        execution_start: executionStart,
-                        execution_end: executionEnd,
-                        execution_steps: executionSteps
-                    })
+                    body: JSON.stringify({ clamped_nodes: clampedNodes })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Hide loader
-                    document.getElementById("loader").style.display = "none";
-        
                     if (data.success) {
-                        var plotContainer = document.getElementById("plot-container");
-                        plotContainer.innerHTML = `<img src="${data.plot_url}" alt="Simulation Plot" style="max-width: 100%; height: auto;">`;
-                        
-                        setupDownloadButton("download-baseline", data.simulation_data.baseline, "baseline_results.json");
-                        setupDownloadButton("download-stimulated", data.simulation_data.stimulated, "stimulated_results.json");
-                        
-                        // Show modal only after results are loaded
-                        var simulationModal = new bootstrap.Modal(document.getElementById('simulation-modal'));
-                        simulationModal.show();
-        
-                        // Add event listener to clean up modal when it's hidden
-                        document.getElementById('simulation-modal').addEventListener('hidden.bs.modal', function () {
-                            document.body.classList.remove('modal-open');
-                            var backdrop = document.querySelector('.modal-backdrop');
-                            if (backdrop) {
-                                backdrop.remove();
-                            }
-                        });
+                        alert("Node clamping updated successfully!");
+                        bootstrap.Modal.getInstance(document.getElementById('nodeTrayModal')).hide();
                     } else {
-                        alert("Simulation failed: " + data.message);
+                        alert("Error updating node clamping: " + (data.error || "Unknown error"));
                     }
                 })
                 .catch(error => {
-                    // Hide loader
-                    document.getElementById("loader").style.display = "none";
                     console.error("Error:", error);
-                    alert("An error occurred while running the simulation.");
+                    alert("An error occurred while updating node clamping.");
                 });
+            }
+        
+            // Attach the event listener to the save button
+            document.getElementById("saveNodeTray").addEventListener("click", saveClampedNodes);
+        
+            function runSimulation() {
+    console.log("runSimulation function called");
+
+    // Check if loader exists
+    const loader = document.getElementById("loader");
+    if (loader) {
+        loader.style.display = "flex";
+    } else {
+        console.error("Loader element not found");
+    }
+
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    console.log("CSRF token retrieved:", csrftoken);
+
+    var executionStart = parseFloat(document.getElementById("execution_start").value) || 0;
+    var executionEnd = parseFloat(document.getElementById("execution_end").value) || 100;
+    var executionSteps = parseInt(document.getElementById("execution_steps").value) || 1000;
+    console.log("Execution parameters:", { start: executionStart, end: executionEnd, steps: executionSteps });
+
+    // Get clamped nodes
+    var clampedNodes = [];
+    document.querySelectorAll("#nodeTrayBody tr").forEach(row => {
+        const checkbox = row.querySelector('input[type="checkbox"]');
+        const stateSelect = row.querySelector('select');
+        if (checkbox && checkbox.checked) {
+            clampedNodes.push({
+                id: checkbox.value,
+                state: stateSelect ? stateSelect.value : 'activate'
             });
+        }
+    });
+    console.log("Clamped nodes:", clampedNodes);
+
+    fetch("/network-model/run_simulation/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken
+        },
+        body: JSON.stringify({
+            execution_start: executionStart,
+            execution_end: executionEnd,
+            execution_steps: executionSteps,
+            clamped_species: clampedNodes
+        })
+    })
+    .then(response => {
+        console.log("Received response:", response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Received data:", data);
+        if (loader) {
+            loader.style.display = "none";
+        }
+
+        if (data.success) {
+            var plotContainer = document.getElementById("plot-container");
+            if (plotContainer) {
+                plotContainer.innerHTML = `
+                    <ul class="nav nav-tabs" id="plotTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="line-plot-tab" data-bs-toggle="tab" data-bs-target="#line-plot" type="button" role="tab" aria-controls="line-plot" aria-selected="true">Line Plot</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="bar-plot-tab" data-bs-toggle="tab" data-bs-target="#bar-plot" type="button" role="tab" aria-controls="bar-plot" aria-selected="false">Bar Plot</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="plotTabsContent">
+                        <div class="tab-pane fade show active" id="line-plot" role="tabpanel" aria-labelledby="line-plot-tab">
+                            <img src="${data.line_plot_url}" alt="Line Plot" style="max-width: 100%; height: auto;">
+                        </div>
+                        <div class="tab-pane fade" id="bar-plot" role="tabpanel" aria-labelledby="bar-plot-tab">
+                            <img src="${data.bar_plot_url}" alt="Bar Plot" style="max-width: 100%; height: auto;">
+                        </div>
+                    </div>
+                `;
+            } else {
+                console.error("Plot container not found");
+            }
+            
+            setupDownloadButton("download-baseline", data.simulation_data.baseline, "baseline_results.json");
+            setupDownloadButton("download-clamped", data.simulation_data.clamped, "clamped_results.json");
+            
+            var simulationModal = new bootstrap.Modal(document.getElementById('simulation-modal'));
+            if (simulationModal) {
+                simulationModal.show();
+            } else {
+                console.error("Simulation modal not found");
+            }
+        } else {
+            console.error("Simulation failed:", data.message);
+            alert("Simulation failed: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error in fetch:", error);
+        if (loader) {
+            loader.style.display = "none";
+        }
+        alert("An error occurred while running the simulation: " + error.message);
+    });
+}
         
             function setupDownloadButton(buttonId, data, filename) {
                 var button = document.getElementById(buttonId);
-                var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-                var url = URL.createObjectURL(blob);
-                button.setAttribute("href", url);
-                button.setAttribute("download", filename);
+                if (button) {
+                    var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+                    var url = URL.createObjectURL(blob);
+                    button.setAttribute("href", url);
+                    button.setAttribute("download", filename);
+                } else {
+                    console.error(`Download button with id '${buttonId}' not found`);
+                }
             }
-        
-            // Event listener for the "Update Parameters" form
-            document.getElementById("update_parameters_form").addEventListener("submit", function(event) {
-                event.preventDefault();
+            function updateParameters() {
                 document.getElementById("loader").style.display = "flex";
                 var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
                 var parametersData = {};
-                var formElements = this.elements;
+                var formElements = document.getElementById("update_parameters_form").elements;
                 for (var i = 0; i < formElements.length; i++) {
                     if (formElements[i].tagName === 'INPUT' && formElements[i].value.trim() !== '') {
                         parametersData[formElements[i].name] = parseFloat(formElements[i].value);
                     }
                 }
         
-                fetch("{% url 'update_parameters' %}", {
+                fetch("/network-model/update_parameters/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -522,8 +888,10 @@
                     console.error("Error:", error);
                     alert("An error occurred while updating parameters.");
                 });
-            });
+            }
         });
+        </script>
+        
         </script>
 </body>
 </html>

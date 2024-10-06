@@ -33,18 +33,18 @@
       <compartment id="cell" size="1" units="dimensionless" constant="true"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="0.572022393270697" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="COL2A" name="COL2A" compartment="cell" initialConcentration="0.598925752707204" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="COL10A1" name="COL10A1" compartment="cell" initialConcentration="0.227887637872998" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="COL2A" name="COL2A" compartment="cell" initialConcentration="0" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="COL10A1" name="COL10A1" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="COL1A" name="COL1A" compartment="cell" initialConcentration="0.727352871643283" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IFNgamma" name="IFN-γ" compartment="cell" initialConcentration="0.363684800052609" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="TNF" name="TNF" compartment="cell" initialConcentration="0.804573167152356" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL12A" name="IL-12A" compartment="cell" initialConcentration="0.0914796272328986" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL17A" name="IL-17A" compartment="cell" initialConcentration="0.78669318539646" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL18" name="IL-18" compartment="cell" initialConcentration="0.462144874769274" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL18" name="IL-18" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL1alpha" name="IL-1α" compartment="cell" initialConcentration="0.629161720905939" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL1beta" name="IL-1β" compartment="cell" initialConcentration="0.0348514285189673" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL6" name="IL-6" compartment="cell" initialConcentration="0.446506893775991" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL1beta" name="IL-1β" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL6" name="IL-6" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL8" name="IL-8" compartment="cell" initialConcentration="0.877891791061225" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL1RA" name="IL-1RA" compartment="cell" initialConcentration="0.867795645582812" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="IL4" name="IL-4" compartment="cell" initialConcentration="0.6472022675885" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
