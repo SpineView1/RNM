@@ -1,0 +1,27 @@
+<div class="tab-pane fade" id="reactions" role="tabpanel" aria-labelledby="reactions-tab">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Reactions</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Reactants/Products</th>
+                        <th>Modifiers</th>
+                        <th>Math</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reaction in model_data.reactions %}
+                    <tr>
+                        <td>{{ reaction.id }}</td>
+                        <td>{{ reaction.reactants_products|safe }}</td>
+                        <td>{{ reaction.modifiers }}</td>
+                        <td>{{ reaction.math }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

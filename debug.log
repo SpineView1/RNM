@@ -160,3 +160,89 @@ Not Found: /favicon.ico
 Simulation completed successfully
 Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
 Simulation completed successfully
+Watching for file changes with StatReloader
+Not Found: /
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Method Not Allowed: /network-model/
+/home/blvksh33p/Documents/biomodelize/biomodelize/urls.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/biomodelize/biomodelize/settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/biomodelize/biomodelize/urls.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Not Found: /network-model/static/
+Not Found: /favicon.ico
+Not Found: /admin
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /
+Method Not Allowed: /network-model/
+Method Not Allowed: /network-model/
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[{'id': 'ACAN', 'state': 'activate'}]
+Simulation completed successfully
+Not Found: /favicon.ico
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /
+Watching for file changes with StatReloader
+Not Found: /
+Error in ViewSBML: Invalid block tag on line 19: 'static'. Did you forget to register or load this tag?
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Not Found: /favicon.ico

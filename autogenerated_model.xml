@@ -33,7 +33,7 @@
       <compartment id="cell" size="1" units="dimensionless" constant="true"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="true"/>
       <species id="COL2A" name="COL2A" compartment="cell" initialConcentration="0" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="COL10A1" name="COL10A1" compartment="cell" initialConcentration="1" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="COL1A" name="COL1A" compartment="cell" initialConcentration="0.727352871643283" substanceUnits="concentration_unit" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
