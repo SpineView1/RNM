@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 
+    // Initialize Bootstrap tabs
+    var tabElms = document.querySelectorAll('button[data-bs-toggle="tab"]')
+    tabElms.forEach(function(tabElm) {
+        new bootstrap.Tab(tabElm)
+    })
+
     // Event listener for the Node Tray button
     var nodeTrayButton = document.getElementById("node_tray_button");
     if (nodeTrayButton) {
