@@ -177,6 +177,12 @@ def parse_sbml(sbml_file):
 
 
 # Endpoint to view SBML
+import os
+import shutil
+import tempfile
+from django.core.files.storage import default_storage
+from django.conf import settings
+
 class ViewSBML(APIView):
     def get(self, request, format=None):
         try:
@@ -186,11 +192,29 @@ class ViewSBML(APIView):
             if not sbml_files:
                 return render(request, 'error.html', {'error_message': "No SBML files found in the directory."})
 
-            sbml_file = sbml_files[0]
-            model_data, errors = parse_sbml(sbml_file)
+            original_sbml_file = sbml_files[0]
+            
+            # Ensure the temp_models directory exists
+            temp_models_dir = os.path.join(settings.MEDIA_ROOT, 'temp_models')
+            os.makedirs(temp_models_dir, exist_ok=True)
+            
+            # Create a temporary file for this session
+            temp_file_name = f'model_{request.session.session_key}.xml'
+            temp_file_path = os.path.join(temp_models_dir, temp_file_name)
+            
+            shutil.copy2(original_sbml_file, temp_file_path)
+            
+            # Use the relative path for storage
+            relative_path = os.path.join('temp_models', temp_file_name)
+            temp_sbml_path = default_storage.path(relative_path)
+
+            model_data, errors = parse_sbml(temp_sbml_path)
 
             if errors:
                 return render(request, 'error.html', {'error_message': errors})
+
+            # Store the temporary file path in the session
+            request.session['temp_sbml_path'] = temp_sbml_path
 
             return render(request, 'view_sbml.html', {'model_data': model_data})
         except Exception as e:
@@ -213,15 +237,10 @@ class RunSimulation(APIView):
             execution_start = float(data.get('execution_start', 0))
             execution_end = float(data.get('execution_end', 100))
             execution_steps = int(data.get('execution_steps', 1000))
-            clamped_species = data.get('clamped_species', [])
 
-            logger.info(f"Simulation parameters: start={execution_start}, end={execution_end}, steps={execution_steps}, clamped={clamped_species}")
+            logger.info(f"Simulation parameters: start={execution_start}, end={execution_end}, steps={execution_steps}")
 
-            sbml_file = next((f for f in os.listdir(settings.BASE_DIR) if f.endswith('.xml')), None)
-            if not sbml_file:
-                return JsonResponse({'success': False, 'message': 'No SBML file found in the project directory.'})
-            
-            sbml_file_path = os.path.join(settings.BASE_DIR, sbml_file)
+            sbml_file_path = request.session.get('temp_sbml_path', '')
             rr = roadrunner.RoadRunner(sbml_file_path)
             
             model = rr.getModel()
@@ -230,65 +249,19 @@ class RunSimulation(APIView):
 
             all_species = model.getFloatingSpeciesIds()
 
-            # Baseline simulation
-            baseline_results = rr.simulate(execution_start, execution_end, execution_steps)
-            baseline_data = {col: baseline_results[:, i].tolist() for i, col in enumerate(baseline_results.colnames)}
+            # Run simulation
+            results = rr.simulate(execution_start, execution_end, execution_steps)
+            final_data = {col: results[-1, i] for i, col in enumerate(results.colnames) if col != 'time'}
 
-            rr.reset()
-            
-            # Clamp selected species
-            for species in clamped_species:
-                species_id = species['id']
-                species_state = species['state']
-                species_with_brackets = f"[{species_id}]" if not species_id.startswith('[') else species_id
-                if species_with_brackets in all_species:
-                    if species_state == 'activate':
-                        rr.setValue(species_with_brackets, 1.0)
-                    elif species_state == 'degenerate':
-                        rr.setValue(species_with_brackets, 0.0)
-                    rr.setBoundary(species_with_brackets, True)
-                    logger.info(f"Clamped {species_with_brackets} to {1.0 if species_state == 'activate' else 0.0} and set as boundary species.")
-
-            # Clamped simulation
-            clamped_results = rr.simulate(execution_start, execution_end, execution_steps)
-            clamped_data = {col: clamped_results[:, i].tolist() for i, col in enumerate(clamped_results.colnames)}
-
-            # Generate plots
+            # Generate bar plot
             plt.figure(figsize=(15, 10))
-            for species in baseline_data.keys():
-                if species != 'time':
-                    plt.plot(baseline_data['time'], baseline_data[species], label=f'{species} (Baseline)')
-                    plt.plot(clamped_data['time'], clamped_data[species], label=f'{species} (Clamped)', linestyle='--')
-            plt.title('Baseline vs Clamped Simulation')
-            plt.xlabel('Time')
-            plt.ylabel('Concentration')
-            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize='small')
-            plt.grid(True)
-            plt.tight_layout()
-
-            # Save line plot
-            line_plot_filename = f'line_plot_{uuid.uuid4().hex}.png'
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
-                plt.savefig(temp_file.name, dpi=300, bbox_inches='tight')
-                plt.close()
-                with open(temp_file.name, 'rb') as f:
-                    line_plot_path = default_storage.save(line_plot_filename, ContentFile(f.read()))
-            os.unlink(temp_file.name)
-
-            # Create bar plot
-            plt.figure(figsize=(15, 10))
-            species = [s for s in baseline_data.keys() if s != 'time']
-            baseline_final = [baseline_data[s][-1] for s in species]
-            clamped_final = [clamped_data[s][-1] for s in species]
-            x = np.arange(len(species))
-            width = 0.35
-            plt.bar(x - width/2, baseline_final, width, label='Baseline')
-            plt.bar(x + width/2, clamped_final, width, label='Clamped')
+            species = list(final_data.keys())
+            values = list(final_data.values())
+            plt.bar(species, values)
             plt.xlabel('Species')
             plt.ylabel('Final Concentration')
-            plt.title('Comparison of Final Values: Baseline vs Clamped')
-            plt.xticks(x, species, rotation=90)
-            plt.legend()
+            plt.title('Final Species Concentrations')
+            plt.xticks(rotation=90)
             plt.tight_layout()
 
             # Save bar plot
@@ -300,20 +273,12 @@ class RunSimulation(APIView):
                     bar_plot_path = default_storage.save(bar_plot_filename, ContentFile(f.read()))
             os.unlink(temp_file.name)
 
-            line_plot_url = default_storage.url(line_plot_path)
             bar_plot_url = default_storage.url(bar_plot_path)
-
-            simulation_data = {
-                'baseline': baseline_data,
-                'clamped': clamped_data,
-                'column_names': list(baseline_data.keys())
-            }
 
             logger.info("Simulation completed successfully")
             return JsonResponse({
                 'success': True,
-                'simulation_data': simulation_data,
-                'line_plot_url': line_plot_url,
+                'simulation_data': final_data,
                 'bar_plot_url': bar_plot_url
             })
 
@@ -392,7 +357,7 @@ class GetNodesView(View):
     def get(self, request):
         try:
             reader = libsbml.SBMLReader()
-            sbml_file_path = os.path.join(settings.BASE_DIR, 'autogenerated_model.xml')
+            sbml_file_path = request.session.get('temp_sbml_path', '')
             document = reader.readSBML(sbml_file_path)
             model = document.getModel()
             
@@ -402,7 +367,7 @@ class GetNodesView(View):
                     'id': species.getId(),
                     'name': species.getName() or species.getId(),
                     'clamped': species.getConstant(),
-                    'state': 'activate' if species.getConstant() else '',
+                    'value': species.getInitialConcentration(),
                     'initial_concentration': species.getInitialConcentration()
                 })
             
@@ -419,17 +384,14 @@ class ClampNodesView(View):
             clamped_nodes = data.get('clamped_nodes', [])
 
             reader = libsbml.SBMLReader()
-            sbml_file_path = os.path.join(settings.BASE_DIR, 'autogenerated_model.xml')
+            sbml_file_path = request.session.get('temp_sbml_path', '')
             document = reader.readSBML(sbml_file_path)
             model = document.getModel()
             
             for species in model.getListOfSpecies():
                 node_info = next((node for node in clamped_nodes if node['id'] == species.getId()), None)
                 if node_info:
-                    if node_info['state'] == 'activate':
-                        species.setInitialConcentration(1.0)  # Set to high value for activation
-                    elif node_info['state'] == 'degenerate':
-                        species.setInitialConcentration(0.0)  # Set to low value for degeneration
+                    species.setInitialConcentration(float(node_info['value']))
                     species.setConstant(True)  # Set as boundary condition
                 else:
                     # Unclamping: reset to original initial concentration and allow to vary

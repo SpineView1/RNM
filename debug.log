@@ -276,3 +276,51 @@ Watching for file changes with StatReloader
 Not Found: /
 Not Found: /favicon.ico
 Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Error in ViewSBML: Invalid block tag on line 593: 'static'. Did you forget to register or load this tag?
+Error in ViewSBML: Invalid block tag on line 593: 'static'. Did you forget to register or load this tag?
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Not Found: /favicon.ico
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+Not Found: /favicon.ico
+Simulation parameters: start=0.0, end=30.0, steps=100, clamped=[]
+Simulation completed successfully
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /
+Simulation parameters: start=0.0, end=30.0, steps=100
+Simulation completed successfully
+Not Found: /network-model/undefined
+Simulation parameters: start=0.0, end=30.0, steps=100
+Simulation completed successfully
+Not Found: /network-model/undefined
+Simulation parameters: start=0.0, end=30.0, steps=100
+Simulation completed successfully
+Not Found: /network-model/undefined
+Simulation parameters: start=0.0, end=30.0, steps=100
+Simulation completed successfully
+Not Found: /network-model/undefined
