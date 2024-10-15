@@ -39,6 +39,20 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error("Update Parameters form not found");
     }
 
+    function checkModelState() {
+        fetch("/network-model/check_model_state/")
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Current model state:", data.current_concentrations);
+            } else {
+                console.error("Failed to get model state:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Error checking model state:", error);
+        });
+    }
 
     function fetchNodesAndPopulateModal() {
         console.log("Fetching nodes...");
@@ -57,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 data.nodes.forEach(node => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${node.name}</td>
+                        <td>${node.name}</td>
                         <td>
                             <div class="form-check">
                                 <input class="form-check-input node-checkbox" type="checkbox" value="${node.id}" id="clamp_${node.id}" ${node.clamped ? 'checked' : ''}>
@@ -67,11 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </td>
                         <td>
-                            <input type="number" class="form-control form-control-sm node-value" id="value_${node.id}" value="${node.value}" ${!node.clamped ? 'disabled' : ''}>
+                            <input type="number" step="any" class="form-control form-control-sm node-value" id="value_${node.id}" value="${node.current_value}" ${!node.clamped ? 'disabled' : ''}>
                         </td>
-                        <td style="max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                            ${node.initial_concentration}
-                        </td>
+                        <td>${node.original_concentration}</td>
                     `;
                     nodeTrayBody.appendChild(row);
                 });
@@ -81,6 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     checkbox.addEventListener('change', function() {
                         const valueInput = this.closest('tr').querySelector('.node-value');
                         valueInput.disabled = !this.checked;
+                        if (this.checked) {
+                            valueInput.value = valueInput.value || "1"; // Default to 1 if empty
+                        }
                     });
                 });
     
@@ -105,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (checkbox.checked) {
                 clampedNodes.push({
                     id: checkbox.value,
-                    value: valueInput.value
+                    value: parseFloat(valueInput.value) || 1 // Use 1 as default if value is empty or not a number
                 });
             }
         });
@@ -155,7 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (loader) loader.style.display = "none";
             return;
         }
-        console.log("CSRF token retrieved");
     
         // Get execution parameters
         const executionStart = parseFloat(document.getElementById("execution_start").value) || 0;
@@ -179,12 +193,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => {
             console.log("Received response:", response);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json().then(errorData => {
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}, traceback: ${errorData.traceback}`);
+                });
             }
             return response.json();
         })
         .then(data => {
             console.log("Received data:", data);
+            console.log("Initial concentrations:", data.initial_concentrations);
+            console.log("Final concentrations:", data.final_concentrations);
             if (loader) {
                 loader.style.display = "none";
             }
@@ -192,13 +210,26 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 const plotContainer = document.getElementById("plot-container");
                 if (plotContainer) {
-                    plotContainer.innerHTML = `
-                        <img src="${data.bar_plot_url}" alt="Bar Plot" style="max-width: 100%; height: auto;">
-                    `;
+                    plotContainer.innerHTML = `<img src="${data.bar_plot_url}" alt="Bar Plot" style="max-width: 100%; height: auto;">`;
                 } else {
                     console.error("Plot container not found");
                 }
-                
+    
+                // Display initial and final concentrations
+                const resultsContainer = document.getElementById("results-container");
+                if (resultsContainer) {
+                    let resultsHtml = "<h3>Simulation Results</h3><table><tr><th>Species</th><th>Initial Concentration</th><th>Final Concentration</th></tr>";
+                    for (let species in data.final_concentrations) {
+                        resultsHtml += `<tr>
+                            <td>${species}</td>
+                            <td>${data.initial_concentrations[species].toFixed(6)}</td>
+                            <td>${data.final_concentrations[species].toFixed(6)}</td>
+                        </tr>`;
+                    }
+                    resultsHtml += "</table>";
+                    resultsContainer.innerHTML = resultsHtml;
+                }
+    
                 const simulationModal = new bootstrap.Modal(document.getElementById('simulation-modal'));
                 if (simulationModal) {
                     simulationModal.show();
@@ -217,5 +248,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             alert("An error occurred while running the simulation: " + error.message);
         });
-    }});
-    
+    }
+});
+
+window.addEventListener('beforeunload', function (e) {
+    // Cancel the event
+    e.preventDefault();
+    // Chrome requires returnValue to be set
+    e.returnValue = '';
+
+    // Send cleanup request to the server
+    navigator.sendBeacon('/network-model/cleanup-temp-file/', JSON.stringify({
+        session_key: getSessionKey()
+    }));
+});
+
+function getSessionKey() {
+    return document.getElementById('session-key').value;
+}
+
+
+

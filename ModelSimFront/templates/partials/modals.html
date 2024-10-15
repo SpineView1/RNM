@@ -31,20 +31,18 @@
   </div>
   
   <!-- Simulation Results Modal -->
-  <div class="modal fade" id="simulation-modal" tabindex="-1" aria-labelledby="simulationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+  <div id="simulation-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="simulationModalLabel">Regulatory Network Simulation Results</h5>
+          <h5 class="modal-title">Simulation Results</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <div id="plot-container" class="text-center"></div>
-          <div class="d-flex justify-content-around mt-4">
-            <a id="download-baseline" class="btn btn-primary">Download Baseline Results</a>
-            <a id="download-stimulated" class="btn btn-secondary">Download Stimulated Results</a>
-          </div>
+          <div id="plot-container"></div>
+          <div id="results-container"></div>
         </div>
       </div>
     </div>
   </div>
+  
