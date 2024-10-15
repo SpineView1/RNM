@@ -93,6 +93,9 @@ class ViewSBML(APIView):
             original_concentrations = self._get_initial_concentrations(temp_sbml_path)
             request.session['original_concentrations'] = original_concentrations
 
+            # Reset clamped nodes for new session
+            request.session['clamped_nodes'] = {}
+
             model_data, errors = self._parse_sbml(temp_sbml_path)
             if errors:
                 return self._render_error(request, errors)
@@ -104,7 +107,7 @@ class ViewSBML(APIView):
 
         except Exception as e:
             logger.exception("Unexpected error in ViewSBML")
-            return self._render_error(request, "An unexpected error occurred.") 
+            return self._render_error(request, "An unexpected error occurred.")
 
     def _get_initial_concentrations(self, sbml_file_path):
         reader = libsbml.SBMLReader()
@@ -275,12 +278,18 @@ class RunSimulation(APIView):
             # Get all species in the model
             species = r.getFloatingSpeciesIds()
 
-            # Get initial concentrations
-            initial_concentrations = {s: r[s] for s in species}
-            logger.info(f"Initial concentrations: {initial_concentrations}")
-
             # Get clamped nodes from the session
             clamped_nodes = request.session.get('clamped_nodes', {})
+
+            # Set clamped nodes to their specified values
+            for species_id, value in clamped_nodes.items():
+                r[species_id] = value
+                # Set the species as a boundary condition
+                r.setBoundaryCondition(species_id, True)
+
+            # Get initial concentrations after setting clamped nodes
+            initial_concentrations = {s: r[s] for s in species}
+            logger.info(f"Initial concentrations: {initial_concentrations}")
 
             # Run simulation
             result = r.simulate(execution_start, execution_end, execution_steps)
@@ -288,16 +297,12 @@ class RunSimulation(APIView):
             # Extract concentrations of all species over time
             concentrations = result[:, 1:]  # Exclude the 'time' column
 
-            # Calculate the median concentration for each node over the simulation period
-            median_concentrations = np.median(concentrations, axis=0)
-
-            # Create a dictionary of final (median) concentrations
-            final_concentrations = dict(zip(species, median_concentrations))
+            # Calculate the final concentration for each node
+            final_concentrations = dict(zip(species, concentrations[-1, :]))
 
             # Ensure clamped nodes maintain their values
             for species_id, value in clamped_nodes.items():
-                if species_id in final_concentrations:
-                    final_concentrations[species_id] = value
+                final_concentrations[species_id] = value
 
             logger.info(f"Final concentrations: {final_concentrations}")
 
@@ -310,12 +315,14 @@ class RunSimulation(APIView):
                 species = model.getSpecies(species_id)
                 if species:
                     species.setInitialConcentration(concentration)
+                    # Preserve boundary condition for clamped nodes
+                    if species_id in clamped_nodes:
+                        species.setBoundaryCondition(True)
+                    else:
+                        species.setBoundaryCondition(False)
 
             writer = libsbml.SBMLWriter()
             writer.writeSBMLToFile(document, sbml_file_path)
-
-            # Update the session with the new concentrations
-            request.session['original_concentrations'] = final_concentrations
 
             # Generate and save bar plot
             bar_plot_url = self._generate_bar_plot(list(final_concentrations.keys()), list(final_concentrations.values()))
@@ -459,30 +466,27 @@ class ClampNodesView(View):
             if not sbml_file_path or not os.path.exists(sbml_file_path):
                 return JsonResponse({'success': False, 'message': 'Temporary SBML file not found.'})
 
-            # Load the model using libSBML
-            reader = libsbml.SBMLReader()
-            document = reader.readSBML(sbml_file_path)
-            model = document.getModel()
+            # Load the model using tellurium
+            r = te.loadSBMLModel(sbml_file_path)
 
             # Reset all species to not be boundary conditions
-            for species in model.getListOfSpecies():
-                species.setBoundaryCondition(False)
+            for species in r.getFloatingSpeciesIds():
+                r.setBoundaryCondition(species, False)
 
             # Set clamped nodes
+            clamped_dict = {}
             for node in clamped_nodes:
                 species_id = node['id']
                 value = float(node['value'])
-                species = model.getSpecies(species_id)
-                if species:
-                    species.setInitialConcentration(value)
-                    species.setBoundaryCondition(True)
+                r[species_id] = value
+                r.setBoundaryCondition(species_id, True)
+                clamped_dict[species_id] = value
 
             # Save the updated SBML
-            writer = libsbml.SBMLWriter()
-            writer.writeSBMLToFile(document, sbml_file_path)
+            te.saveToFile(sbml_file_path, r.getSBML())
 
             # Update the session with clamped nodes information
-            request.session['clamped_nodes'] = {node['id']: node['value'] for node in clamped_nodes}
+            request.session['clamped_nodes'] = clamped_dict
 
             return JsonResponse({'success': True})
         except Exception as e:
