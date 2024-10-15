@@ -5,38 +5,38 @@
       <compartment id="cell" spatialDimensions="3" size="1" constant="true"/>
     </listOfCompartments>
     <listOfSpecies>
-      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="0.998358804561894" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
-      <species id="COL2A" name="COL2A" compartment="cell" initialConcentration="0.99833848857421" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
-      <species id="COL10A1" name="COL10A1" compartment="cell" initialConcentration="2.14020046519926e-09" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
-      <species id="COL1A" name="COL1A" compartment="cell" initialConcentration="1.34750907062272e-08" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
-      <species id="IFN_gamma" name="IFN-γ" compartment="cell" initialConcentration="5.7292345155591e-10" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
+      <species id="ACAN" name="ACAN" compartment="cell" initialConcentration="0.998358958123805" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="COL2A" name="COL2A" compartment="cell" initialConcentration="0.99833864247213" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="COL10A1" name="COL10A1" compartment="cell" initialConcentration="2.02034640136493e-09" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="COL1A" name="COL1A" compartment="cell" initialConcentration="1.27341655207162e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IFN_gamma" name="IFN-γ" compartment="cell" initialConcentration="5.39855690162009e-10" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
       <species id="TNF" name="TNF" compartment="cell" initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
-      <species id="IL_12A" name="IL-12A" compartment="cell" initialConcentration="3.15159003799234e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_17A" name="IL-17A" compartment="cell" initialConcentration="4.01465569236788e-07" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_18" name="IL-18" compartment="cell" initialConcentration="8.85052615489111e-10" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_1alpha" name="IL-1α" compartment="cell" initialConcentration="8.85053255571376e-10" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_1beta" name="IL-1β" compartment="cell" initialConcentration="2.52526391604941e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_6" name="IL-6" compartment="cell" initialConcentration="0.00866569887377055" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_8" name="IL-8" compartment="cell" initialConcentration="0.00012057150085985" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_1RA" name="IL-1RA" compartment="cell" initialConcentration="1.33356163808541e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_4" name="IL-4" compartment="cell" initialConcentration="0.92989216384371" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IL_10" name="IL-10" compartment="cell" initialConcentration="0.738734506594509" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="TGF_beta" name="TGF-β" compartment="cell" initialConcentration="0.999998307269902" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="IGF1" name="IGF1" compartment="cell" initialConcentration="0.995782123631799" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="CSF2" name="CSF2" compartment="cell" initialConcentration="2.08932018936788e-09" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="GDF5" name="GDF5" compartment="cell" initialConcentration="0.999999986664381" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="PGRN" name="PGRN" compartment="cell" initialConcentration="5.37151152848955e-40" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="CCL" name="CCL" compartment="cell" initialConcentration="4.32363645126263e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="CCL22" name="CCL22" compartment="cell" initialConcentration="0.177392400366264" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="MMP1" name="MMP1" compartment="cell" initialConcentration="1.42083188829237e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="MMP13" name="MMP13" compartment="cell" initialConcentration="7.76345557341311e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="MMP2" name="MMP2" compartment="cell" initialConcentration="3.56706106465245e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="MMP3" name="MMP3" compartment="cell" initialConcentration="1.56041512699985e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="MMP9" name="MMP9" compartment="cell" initialConcentration="6.71740065046701e-07" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="VEGF" name="VEGF" compartment="cell" initialConcentration="1.52734587880874e-09" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="ADAMTS4_5" name="ADAMTS4/5" compartment="cell" initialConcentration="8.11000743747561e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="TIMP1_2" name="TIMP1/2" compartment="cell" initialConcentration="0.991211178185488" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
-      <species id="TIMP3" name="TIMP3" compartment="cell" initialConcentration="0.999999438843383" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_12A" name="IL-12A" compartment="cell" initialConcentration="3.05315120681764e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_17A" name="IL-17A" compartment="cell" initialConcentration="3.95923801993129e-07" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_18" name="IL-18" compartment="cell" initialConcentration="8.55608730512866e-10" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_1alpha" name="IL-1α" compartment="cell" initialConcentration="8.55608730512866e-10" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_1beta" name="IL-1β" compartment="cell" initialConcentration="2.4829353550428e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_6" name="IL-6" compartment="cell" initialConcentration="0.00866556537460879" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_8" name="IL-8" compartment="cell" initialConcentration="0.000120561714486461" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_1RA" name="IL-1RA" compartment="cell" initialConcentration="1.29012344341337e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_4" name="IL-4" compartment="cell" initialConcentration="0.929892305519129" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="IL_10" name="IL-10" compartment="cell" initialConcentration="0.738734932039258" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="TGF_beta" name="TGF-β" compartment="cell" initialConcentration="1" hasOnlySubstanceUnits="false" boundaryCondition="true" constant="false"/>
+      <species id="IGF1" name="IGF1" compartment="cell" initialConcentration="0.99578224637074" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="CSF2" name="CSF2" compartment="cell" initialConcentration="2.02034640136489e-09" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="GDF5" name="GDF5" compartment="cell" initialConcentration="0.999999987098765" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="PGRN" name="PGRN" compartment="cell" initialConcentration="5.3719527045545e-40" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="CCL" name="CCL" compartment="cell" initialConcentration="4.25013329329377e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="CCL22" name="CCL22" compartment="cell" initialConcentration="0.177392176853233" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="MMP1" name="MMP1" compartment="cell" initialConcentration="1.3723521074508e-08" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="MMP13" name="MMP13" compartment="cell" initialConcentration="7.7628157716984e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="MMP2" name="MMP2" compartment="cell" initialConcentration="3.56642337479302e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="MMP3" name="MMP3" compartment="cell" initialConcentration="1.56028703791678e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="MMP9" name="MMP9" compartment="cell" initialConcentration="6.60728166226835e-07" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="VEGF" name="VEGF" compartment="cell" initialConcentration="1.46904299021031e-09" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="ADAMTS4_5" name="ADAMTS4/5" compartment="cell" initialConcentration="8.10941212410984e-05" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="TIMP1_2" name="TIMP1/2" compartment="cell" initialConcentration="0.99121129674193" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
+      <species id="TIMP3" name="TIMP3" compartment="cell" initialConcentration="0.999999458464217" hasOnlySubstanceUnits="false" boundaryCondition="false" constant="false"/>
     </listOfSpecies>
     <listOfParameters>
       <parameter id="gamma" value="1" constant="true"/>
