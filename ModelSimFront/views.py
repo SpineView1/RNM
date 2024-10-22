@@ -224,9 +224,19 @@ class ViewSBML(APIView):
         # Extract model metadata
         model_metadata = ""
         if model.isSetNotes():
-            model_metadata += "Notes:\n" + model.getNotesString() + "\n"
-        if model.isSetAnnotation():
-            model_metadata +=  model.getAnnotationString() + "\n"
+            notes_string = model.getNotesString()
+            # Remove XML/XHTML tags and unescape HTML entities
+            import re
+            from html import unescape
+            
+            # Remove the notes tags
+            notes_string = re.sub(r'<\/?notes>', '', notes_string)
+            # Remove the xmlns attribute
+            notes_string = re.sub(r'\sxmlns="[^"]+"', '', notes_string)
+            # Remove body tags
+            notes_string = re.sub(r'<\/?body>', '', notes_string)
+            
+            model_metadata = unescape(notes_string).strip()
 
         model_data['model_metadata'] = model_metadata
         errors = None
