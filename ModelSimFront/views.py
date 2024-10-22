@@ -24,8 +24,7 @@ import shutil
 from rest_framework.response import Response
 from rest_framework import status
 import traceback
-
-
+import tellurium as te
 
 logger = logging.getLogger(__name__)
 
@@ -256,20 +255,6 @@ def add_brackets(name):
 def remove_brackets(name):
     return name.strip('[]')
 
-
-import tellurium as te
-import numpy as np
-
-import tellurium as te
-import numpy as np
-
-import tellurium as te
-import numpy as np
-import roadrunner
-import libsbml
-import matplotlib.pyplot as plt
-
-@method_decorator(csrf_exempt, name='dispatch')
 @method_decorator(csrf_exempt, name='dispatch')
 class RunSimulation(APIView):
     def post(self, request, format=None):
