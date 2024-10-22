@@ -260,6 +260,7 @@ import libsbml
 import matplotlib.pyplot as plt
 
 @method_decorator(csrf_exempt, name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class RunSimulation(APIView):
     def post(self, request, format=None):
         try:
@@ -272,60 +273,65 @@ class RunSimulation(APIView):
             if not sbml_file_path or not os.path.exists(sbml_file_path):
                 return JsonResponse({'success': False, 'message': 'Temporary SBML file not found.'})
 
-            # Load the model using tellurium
-            r = te.loadSBMLModel(sbml_file_path)
-            
-            # Get all species in the model
-            species = r.getFloatingSpeciesIds()
+            # First update the SBML file with boundary conditions using libSBML
+            reader = libsbml.SBMLReader()
+            document = reader.readSBML(sbml_file_path)
+            model = document.getModel()
 
             # Get clamped nodes from the session
             clamped_nodes = request.session.get('clamped_nodes', {})
 
-            # Set clamped nodes to their specified values
+            # Update boundary conditions in SBML
+            for species in model.getListOfSpecies():
+                species_id = species.getId()
+                if species_id in clamped_nodes:
+                    species.setBoundaryCondition(True)
+                    species.setConstant(True)
+                    species.setInitialConcentration(clamped_nodes[species_id])
+                else:
+                    species.setBoundaryCondition(False)
+                    species.setConstant(False)
+
+            # Write updated SBML back to file
+            writer = libsbml.SBMLWriter()
+            writer.writeSBMLToFile(document, sbml_file_path)
+
+            # Now load with tellurium for simulation
+            r = te.loadSBMLModel(sbml_file_path)
+            
+            # Get all species
+            species = r.getFloatingSpeciesIds()
+
+            # Set clamped values directly in tellurium
             for species_id, value in clamped_nodes.items():
                 r[species_id] = value
-                # Set the species as a boundary condition
-                r.setBoundaryCondition(species_id, True)
 
-            # Get initial concentrations after setting clamped nodes
+            # Get initial concentrations (current state)
             initial_concentrations = {s: r[s] for s in species}
-            logger.info(f"Initial concentrations: {initial_concentrations}")
 
             # Run simulation
             result = r.simulate(execution_start, execution_end, execution_steps)
 
-            # Extract concentrations of all species over time
+            # Extract final concentrations
             concentrations = result[:, 1:]  # Exclude the 'time' column
-
-            # Calculate the final concentration for each node
             final_concentrations = dict(zip(species, concentrations[-1, :]))
 
             # Ensure clamped nodes maintain their values
             for species_id, value in clamped_nodes.items():
                 final_concentrations[species_id] = value
 
-            logger.info(f"Final concentrations: {final_concentrations}")
-
-            # Update the SBML file with the final concentrations
-            reader = libsbml.SBMLReader()
-            document = reader.readSBML(sbml_file_path)
-            model = document.getModel()
-
+            # Update the SBML file with the final state
             for species_id, concentration in final_concentrations.items():
                 species = model.getSpecies(species_id)
                 if species:
                     species.setInitialConcentration(concentration)
-                    # Preserve boundary condition for clamped nodes
-                    if species_id in clamped_nodes:
-                        species.setBoundaryCondition(True)
-                    else:
-                        species.setBoundaryCondition(False)
 
             writer = libsbml.SBMLWriter()
             writer.writeSBMLToFile(document, sbml_file_path)
 
-            # Generate and save bar plot
-            bar_plot_url = self._generate_bar_plot(list(final_concentrations.keys()), list(final_concentrations.values()))
+            # Generate plot
+            bar_plot_url = self._generate_bar_plot(list(final_concentrations.keys()), 
+                                                 list(final_concentrations.values()))
 
             return JsonResponse({
                 'success': True,
@@ -344,12 +350,13 @@ class RunSimulation(APIView):
             }, status=500)
 
     def _generate_bar_plot(self, species_names, concentrations):
+        # Existing plot generation code remains the same
         plt.figure(figsize=(12, 8))
         plt.bar(range(len(species_names)), concentrations, tick_label=species_names)
         plt.xlabel('Nodes (Species)')
         plt.ylabel('Concentration')
         plt.title('Concentrations of All Nodes')
-        plt.xticks(rotation=90)  # Rotate x-axis labels for readability
+        plt.xticks(rotation=90)
         plt.tight_layout()
         plt.grid(axis='y')
 
@@ -368,11 +375,11 @@ class UpdateParameters(APIView):
     def post(self, request, format=None):
         try:
             data = json.loads(request.body)
-            sbml_file = next((f for f in os.listdir(settings.BASE_DIR) if f.endswith('.xml')), None)
-            if not sbml_file:
-                return JsonResponse({'success': False, 'message': 'No SBML file found in the directory.'})
+            
+            sbml_file_path = request.session.get('temp_sbml_path', '')
+            if not sbml_file_path or not os.path.exists(sbml_file_path):
+                return JsonResponse({'success': False, 'message': 'Temporary SBML file not found.'})
 
-            sbml_file_path = os.path.join(settings.BASE_DIR, sbml_file)
             reader = libsbml.SBMLReader()
             document = reader.readSBML(sbml_file_path)
 
@@ -400,24 +407,31 @@ class UpdateParameters(APIView):
 class DownloadSBMLView(View):
     def get(self, request, *args, **kwargs):
         try:
-            file_name = 'autogenerated_model.xml'
-            file_path = os.path.join(settings.BASE_DIR, file_name)
+            # Get the temporary SBML file path from the session
+            sbml_file_path = request.session.get('temp_sbml_path', '')
+            if not sbml_file_path or not os.path.exists(sbml_file_path):
+                # If temp file not found, try the default path
+                file_name = 'autogenerated_model.xml'
+                sbml_file_path = os.path.join(settings.BASE_DIR, file_name)
+
+            if not os.path.exists(sbml_file_path):
+                return HttpResponse(f"SBML file not found at {sbml_file_path}", status=404)
             
-            if not os.path.exists(file_path):
-                return HttpResponse(f"SBML file not found at {file_path}", status=404)
+            if not os.access(sbml_file_path, os.R_OK):
+                return HttpResponse(f"Permission denied: Cannot read SBML file at {sbml_file_path}", status=403)
+
+            # Create response with file
+            file_obj = open(sbml_file_path, 'rb')
+            response = FileResponse(
+                file_obj,
+                content_type='application/xml',
+                as_attachment=True,
+                filename='network_model.xml'
+            )
             
-            if not os.access(file_path, os.R_OK):
-                return HttpResponse(f"Permission denied: Cannot read SBML file at {file_path}", status=403)
-            
-            file_size = os.path.getsize(file_path)
-            
-            with open(file_path, 'rb') as file:
-                response = FileResponse(file, content_type='application/xml')
-                response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-                response['Content-Length'] = file_size
-            
+            # Let FileResponse handle closing the file
             return response
-        
+
         except Exception as e:
             logger.exception("An error occurred while trying to download the SBML file")
             return HttpResponse(f"An error occurred: {str(e)}", status=500)
@@ -466,33 +480,46 @@ class ClampNodesView(View):
             if not sbml_file_path or not os.path.exists(sbml_file_path):
                 return JsonResponse({'success': False, 'message': 'Temporary SBML file not found.'})
 
-            # Load the model using tellurium
-            r = te.loadSBMLModel(sbml_file_path)
+            # Use libSBML to modify the model
+            reader = libsbml.SBMLReader()
+            document = reader.readSBML(sbml_file_path)
+            model = document.getModel()
 
-            # Reset all species to not be boundary conditions
-            for species in r.getFloatingSpeciesIds():
-                r.setBoundaryCondition(species, False)
+            # First, reset all species to not be boundary conditions
+            for species in model.getListOfSpecies():
+                species.setBoundaryCondition(False)
+                species.setConstant(False)
 
             # Set clamped nodes
             clamped_dict = {}
             for node in clamped_nodes:
                 species_id = node['id']
                 value = float(node['value'])
-                r[species_id] = value
-                r.setBoundaryCondition(species_id, True)
-                clamped_dict[species_id] = value
+                
+                species = model.getSpecies(species_id)
+                if species:
+                    species.setBoundaryCondition(True)
+                    species.setConstant(True)
+                    species.setInitialConcentration(value)
+                    clamped_dict[species_id] = value
 
-            # Save the updated SBML
-            te.saveToFile(sbml_file_path, r.getSBML())
+            # Save the modified SBML file
+            writer = libsbml.SBMLWriter()
+            writer.writeSBMLToFile(document, sbml_file_path)
 
             # Update the session with clamped nodes information
             request.session['clamped_nodes'] = clamped_dict
 
             return JsonResponse({'success': True})
+
         except Exception as e:
             logger.error(f"Error in ClampNodesView: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            return JsonResponse({
+                'success': False, 
+                'error': str(e),
+                'traceback': traceback.format_exc()
+            }, status=500)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class CleanupTempFile(View):
