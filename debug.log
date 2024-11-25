@@ -3198,3 +3198,152 @@ Watching for file changes with StatReloader
 /home/blvksh33p/Documents/biomodelize/ModelSimFront/views.py changed, reloading.
 Watching for file changes with StatReloader
 Not Found: /favicon.ico
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: getFloatingSpeciesIndex
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 294, in post
+    request.session['last_state'] = {species_id: result[-1, r.getFloatingSpeciesIndex(species_id) +1] for species_id in species_ids}
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 294, in <dictcomp>
+    request.session['last_state'] = {species_id: result[-1, r.getFloatingSpeciesIndex(species_id) +1] for species_id in species_ids}
+  File "/home/blvksh33p/Documents/experiment/RNM/env/lib/python3.10/site-packages/roadrunner/roadrunner.py", line 4443, in __getattr__
+    raise AttributeError(name)
+AttributeError: getFloatingSpeciesIndex. Did you mean: 'getFloatingSpeciesIds'?
+
+Internal Server Error: /network-model/run_simulation/
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: 'RunSimulation' object has no attribute '_generate_bar_plot'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 314, in post
+    bar_plot_url = self._generate_bar_plot(list(request.session['last_state'].keys()),
+AttributeError: 'RunSimulation' object has no attribute '_generate_bar_plot'. Did you mean: 'generate_bar_plot'?
+
+Internal Server Error: /network-model/run_simulation/
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: 'IL_1beta'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 290, in post
+    r[s_id] = initial_concentrations[s_id]
+KeyError: 'IL_1beta'
+
+Internal Server Error: /network-model/run_simulation/
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: 'TNF'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 290, in post
+    r[s_id] = initial_concentrations[s_id]
+KeyError: 'TNF'
+
+Internal Server Error: /network-model/run_simulation/
+Not Found: /favicon.ico
+Error in RunSimulation: 'list' object has no attribute 'keys'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 324, in post
+    bar_plot_url = self._generate_bar_plot(
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 350, in _generate_bar_plot
+    all_species_ids = list(concentrations.keys())  # Use keys from concentrations (session's last state)
+AttributeError: 'list' object has no attribute 'keys'
+
+Internal Server Error: /network-model/run_simulation/
+Not Found: /favicon.ico
+Error in RunSimulation: 'list' object has no attribute 'keys'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 324, in post
+    bar_plot_url = self._generate_bar_plot(
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 350, in _generate_bar_plot
+    all_species_ids = list(concentrations.keys())  # Use keys from concentrations (session's last state)
+AttributeError: 'list' object has no attribute 'keys'
+
+Internal Server Error: /network-model/run_simulation/
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: 'TNF'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 290, in post
+    r[s_id] = initial_concentrations[s_id]
+KeyError: 'TNF'
+
+Internal Server Error: /network-model/run_simulation/
+Error in RunSimulation: 'TNF'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 290, in post
+    r[s_id] = initial_concentrations[s_id]
+KeyError: 'TNF'
+
+Internal Server Error: /network-model/run_simulation/
+Error in RunSimulation: 'TNF'
+Traceback: Traceback (most recent call last):
+  File "/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py", line 290, in post
+    r[s_id] = initial_concentrations[s_id]
+KeyError: 'TNF'
+
+Internal Server Error: /network-model/run_simulation/
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Bad Request: /network-model/cleanup-temp-file/
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+Bad Request: /network-model/cleanup-temp-file/
+Bad Request: /network-model/cleanup-temp-file/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Error in RunSimulation: 'TNF'
+Internal Server Error: /network-model/run_simulation/
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+/home/blvksh33p/Documents/experiment/RNM/ModelSimFront/views.py changed, reloading.
+Watching for file changes with StatReloader
+Bad Request: /network-model/cleanup-temp-file/
+Not Found: /favicon.ico
+Not Found: /favicon.ico

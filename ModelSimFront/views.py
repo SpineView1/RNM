@@ -28,6 +28,14 @@ import tellurium as te
 
 logger = logging.getLogger(__name__)
 
+# Add at the top of your file
+FIXED_ORDER = [
+    'ACAN', 'COL2A', 'COL1A', 'COL10A1', 'TNF', 'IL_12A', 'IL_17A', 
+    'IL_1alpha', 'IL_1beta', 'IL_4', 'IL_6', 'IL_8', 'IL_10', 'TGF_beta', 
+    'IGF1', 'CCL22', 'GDF5', 'PGRN', 'CCL', 'MMP1', 'MMP2', 'MMP3', 'MMP9', 
+    'MMP13', 'VEGF', 'ADAMTS4_5', 'TIMP1_2', 'TIMP3'
+]
+
 
 # Define model classes (Compartment, Species, Reaction, UnitDefinition, Parameter, Event)
 class Compartment:
@@ -257,81 +265,113 @@ def remove_brackets(name):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RunSimulation(APIView):
+    def get_baseline_values(self):
+        return {
+            'ACAN': 0.9983613865848022,
+            'ADAMTS4_5': 8.092625378922021e-05,
+            'CCL': 2.5173856294816446e-08,
+            'CCL22': 0.17738609790383056,
+            'CCN2': 0.9999999692100777,
+            'COL10A1': 3.0059609346285684e-10,
+            'COL1A': 2.0001357420127274e-09,
+            'COL2A': 0.9983410707055728,
+            'CSF2': 3.005448970436891e-10,
+            'GDF5': 0.9999999979997497,
+            'IFN_gamma': 7.284689827839055e-11,
+            'IGF1': 0.9957857113761,
+            'IL_10': 0.7387459489158427,
+            'IL_12A': 5.954032557892407e-09,
+            'IL_17A': 2.6567000452589797e-07,
+            'IL_18': 1.2429956788066651e-10,
+            'IL_1RA': 2.0001906623784544e-09,
+            'IL_1alpha': 1.2421322758498211e-10,
+            'IL_1beta': 1.4836375074985397e-08,
+            'IL_4': 0.9298957607389551,
+            'IL_6': 0.0086618406386164,
+            'TNF': 0.0786618406386164,
+            'IL_8': 0.00012028793176261721,
+            'MMP1': 2.5182956776717087e-09,
+            'MMP13': 4.342611601799085e-05,
+            'MMP2': 3.5488844978246427e-05,
+            'MMP3': 1.1897600726024104e-05,
+            'MMP9': 1.92924087560209e-12,
+            'PGRN': 4.0848997437474845e-14,
+            'TGF_beta': 0.9999990861413531,
+            'TIMP1_2': 0.9912141863372799,
+            'TIMP3': 0.9999999334058873,
+            'VEGF': 2.3190753403830494e-11
+        }
+
     def post(self, request, format=None):
         try:
             data = json.loads(request.body)
-            execution_start = float(data.get('execution_start', 0))
-            execution_end = float(data.get('execution_end', 30))
-            execution_steps = int(data.get('execution_steps', 100))
+            execution_start = 0
+            execution_end = 30
+            execution_steps = 100
 
             sbml_file_path = request.session.get('temp_sbml_path', '')
             if not sbml_file_path or not os.path.exists(sbml_file_path):
                 return JsonResponse({'success': False, 'message': 'Temporary SBML file not found.'})
 
-            # First update the SBML file with boundary conditions using libSBML
-            reader = libsbml.SBMLReader()
-            document = reader.readSBML(sbml_file_path)
-            model = document.getModel()
-
-            # Get clamped nodes from the session
-            clamped_nodes = request.session.get('clamped_nodes', {})
-
-            # Update boundary conditions in SBML
-            for species in model.getListOfSpecies():
-                species_id = species.getId()
-                if species_id in clamped_nodes:
-                    species.setBoundaryCondition(True)
-                    species.setConstant(True)
-                    species.setInitialConcentration(clamped_nodes[species_id])
-                else:
-                    species.setBoundaryCondition(False)
-                    species.setConstant(False)
-
-            # Write updated SBML back to file
-            writer = libsbml.SBMLWriter()
-            writer.writeSBMLToFile(document, sbml_file_path)
-
-            # Now load with tellurium for simulation
+            # Load model
             r = te.loadSBMLModel(sbml_file_path)
             
-            # Get all species
-            species = r.getFloatingSpeciesIds()
+            # Initialize with baseline values if no last state
+            if 'last_state' not in request.session:
+                request.session['last_state'] = self.get_baseline_values()
 
-            # Set clamped values directly in tellurium
-            for species_id, value in clamped_nodes.items():
-                r[species_id] = value
+            # Set initial conditions from last state
+            last_state = request.session['last_state']
+            for species, value in last_state.items():
+                try:
+                    r[species] = value
+                except Exception as e:
+                    logger.error(f"Error setting {species}: {str(e)}")
+                    continue
 
-            # Get initial concentrations (current state)
-            initial_concentrations = {s: r[s] for s in species}
-
-            # Run simulation
-            result = r.simulate(execution_start, execution_end, execution_steps)
-
-            # Extract final concentrations
-            concentrations = result[:, 1:]  # Exclude the 'time' column
-            final_concentrations = dict(zip(species, concentrations[-1, :]))
-
-            # Ensure clamped nodes maintain their values
-            for species_id, value in clamped_nodes.items():
-                final_concentrations[species_id] = value
-
-            # Update the SBML file with the final state
-            for species_id, concentration in final_concentrations.items():
-                species = model.getSpecies(species_id)
-                if species:
-                    species.setInitialConcentration(concentration)
-
-            writer = libsbml.SBMLWriter()
-            writer.writeSBMLToFile(document, sbml_file_path)
-
-            # Generate plot
-            bar_plot_url = self._generate_bar_plot(list(final_concentrations.keys()), 
-                                                 list(final_concentrations.values()))
+            # Get clamped nodes
+            clamped_nodes = request.session.get('clamped_nodes', {})
+            
+            # Run simulation with proper clamping
+            result = []
+            time_points = np.linspace(execution_start, execution_end, execution_steps)
+            
+            for t in np.diff(time_points):
+                # Apply clamps at each step
+                for species_id, value in clamped_nodes.items():
+                    try:
+                        r[species_id] = value
+                    except Exception as e:
+                        logger.error(f"Error clamping {species_id}: {str(e)}")
+                        continue
+                
+                # Simulate one step
+                r.simulate(0, t, 2)
+                state = r.getFloatingSpeciesConcentrations()
+                result.append(state)
+            
+            result = np.array(result)
+            species_names = r.getFloatingSpeciesIds()
+            
+            # Get final state
+            final_state = {
+                species_id: result[-1][i]
+                for i, species_id in enumerate(species_names)
+            }
+            
+            # Update session state
+            request.session['last_state'] = final_state
+            
+            # Generate plot using fixed order
+            plot_species = [s for s in FIXED_ORDER if s in final_state]
+            concentrations = [final_state[s] for s in plot_species]
+            
+            bar_plot_url = self._generate_bar_plot(plot_species, concentrations)
 
             return JsonResponse({
                 'success': True,
-                'initial_concentrations': initial_concentrations,
-                'final_concentrations': final_concentrations,
+                'initial_concentrations': last_state,
+                'final_concentrations': final_state,
                 'bar_plot_url': bar_plot_url
             })
 
@@ -339,21 +379,30 @@ class RunSimulation(APIView):
             logger.error(f"Error in RunSimulation: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             return JsonResponse({
-                'success': False,
-                'message': f"An error occurred: {str(e)}",
+                'success': False, 
+                'message': str(e),
                 'traceback': traceback.format_exc()
             }, status=500)
 
     def _generate_bar_plot(self, species_names, concentrations):
-        # Existing plot generation code remains the same
-        plt.figure(figsize=(12, 8))
-        plt.bar(range(len(species_names)), concentrations, tick_label=species_names)
-        plt.xlabel('Nodes (Species)')
+        plt.figure(figsize=(15, 8))
+        
+        x = np.arange(len(species_names))
+        width = 0.35
+        
+        # Create bar colors based on clamped nodes
+        bar_colors = ['skyblue'] * len(species_names)
+        clamped_nodes = self.request.session.get('clamped_nodes', {})
+        for i, species_id in enumerate(species_names):
+            if species_id in clamped_nodes:
+                bar_colors[i] = 'yellow'
+        
+        plt.bar(x, concentrations, tick_label=species_names, color=bar_colors)
+        plt.xticks(rotation=45, ha='right')
         plt.ylabel('Concentration')
         plt.title('Concentrations of All Nodes')
-        plt.xticks(rotation=90)
+        plt.grid(True, axis='y', linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.grid(axis='y')
 
         bar_plot_filename = f'bar_plot_{uuid.uuid4().hex}.png'
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
@@ -364,7 +413,7 @@ class RunSimulation(APIView):
         os.unlink(temp_file.name)
 
         return default_storage.url(bar_plot_path)
-
+    
 # Endpoint to update parameters
 class UpdateParameters(APIView):
     def post(self, request, format=None):
@@ -502,8 +551,15 @@ class ClampNodesView(View):
             writer = libsbml.SBMLWriter()
             writer.writeSBMLToFile(document, sbml_file_path)
 
-            # Update the session with clamped nodes information
+            # Update the session
             request.session['clamped_nodes'] = clamped_dict
+            
+            # If this is the first clamp after baseline, store baseline state
+            if 'baseline_state' not in request.session:
+                # Load model to get baseline state
+                r = te.loadSBMLModel(sbml_file_path)
+                baseline_state = {s: r[s] for s in r.getFloatingSpeciesIds()}
+                request.session['baseline_state'] = baseline_state
 
             return JsonResponse({'success': True})
 
