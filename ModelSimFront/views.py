@@ -315,7 +315,7 @@ class RunSimulation(APIView):
 
             # Load model
             r = te.loadSBMLModel(sbml_file_path)
-            
+
             # Initialize with baseline values if no last state
             if 'last_state' not in request.session:
                 request.session['last_state'] = self.get_baseline_values()
@@ -331,11 +331,11 @@ class RunSimulation(APIView):
 
             # Get clamped nodes
             clamped_nodes = request.session.get('clamped_nodes', {})
-            
+
             # Run simulation with proper clamping
             result = []
             time_points = np.linspace(execution_start, execution_end, execution_steps)
-            
+
             for t in np.diff(time_points):
                 # Apply clamps at each step
                 for species_id, value in clamped_nodes.items():
@@ -344,33 +344,40 @@ class RunSimulation(APIView):
                     except Exception as e:
                         logger.error(f"Error clamping {species_id}: {str(e)}")
                         continue
-                
+
                 # Simulate one step
                 r.simulate(0, t, 2)
                 state = r.getFloatingSpeciesConcentrations()
                 result.append(state)
-            
+
             result = np.array(result)
             species_names = r.getFloatingSpeciesIds()
-            
+
+            # Get initial state (last state from previous simulation)
+            initial_state = request.session.get('last_state', self.get_baseline_values())
+
             # Get final state
             final_state = {
                 species_id: result[-1][i]
                 for i, species_id in enumerate(species_names)
             }
-            
-            # Update session state
+
+            # Add clamped values to final state
+            final_state.update(clamped_nodes)  # Ensure clamped nodes appear in final state
+
+            # Update session state for next simulation
             request.session['last_state'] = final_state
-            
-            # Generate plot using fixed order
-            plot_species = [s for s in FIXED_ORDER if s in final_state]
-            concentrations = [final_state[s] for s in plot_species]
-            
-            bar_plot_url = self._generate_bar_plot(plot_species, concentrations)
+
+            # Generate plot with both initial and final concentrations
+            bar_plot_url = self._generate_bar_plot(
+                species_names=FIXED_ORDER,
+                concentrations=final_state,
+                initial_concentrations=initial_state
+            )
 
             return JsonResponse({
                 'success': True,
-                'initial_concentrations': last_state,
+                'initial_concentrations': initial_state,
                 'final_concentrations': final_state,
                 'bar_plot_url': bar_plot_url
             })
@@ -379,31 +386,39 @@ class RunSimulation(APIView):
             logger.error(f"Error in RunSimulation: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
             return JsonResponse({
-                'success': False, 
+                'success': False,
                 'message': str(e),
                 'traceback': traceback.format_exc()
             }, status=500)
 
-    def _generate_bar_plot(self, species_names, concentrations):
+    def _generate_bar_plot(self, species_names, concentrations, initial_concentrations):
         plt.figure(figsize=(15, 8))
         
-        x = np.arange(len(species_names))
+        # Use fixed order for species
+        species = FIXED_ORDER
+        initial_values = [initial_concentrations.get(s, 0) for s in species]
+        final_values = [concentrations.get(s, 0) for s in species]  # Use get() to handle missing values
+        
+        x = np.arange(len(species))
         width = 0.35
         
-        # Create bar colors based on clamped nodes
-        bar_colors = ['skyblue'] * len(species_names)
-        clamped_nodes = self.request.session.get('clamped_nodes', {})
-        for i, species_id in enumerate(species_names):
-            if species_id in clamped_nodes:
-                bar_colors[i] = 'yellow'
+        # Plot initial concentrations
+        plt.bar(x - width/2, initial_values, width, label='Initial', color='skyblue')
         
-        plt.bar(x, concentrations, tick_label=species_names, color=bar_colors)
-        plt.xticks(rotation=45, ha='right')
+        # Plot final concentrations
+        plt.bar(x + width/2, final_values, width, label='Final', color='yellow')
+        
+        # Add grid and labels
+        plt.xlabel('Nodes (Species)')
         plt.ylabel('Concentration')
-        plt.title('Concentrations of All Nodes')
+        plt.title('Node Concentrations')
+        plt.xticks(x, species, rotation=45, ha='right')
         plt.grid(True, axis='y', linestyle='--', alpha=0.7)
+        plt.legend()
+        
         plt.tight_layout()
-
+        
+        # Save plot
         bar_plot_filename = f'bar_plot_{uuid.uuid4().hex}.png'
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             plt.savefig(temp_file.name, dpi=300, bbox_inches='tight')
